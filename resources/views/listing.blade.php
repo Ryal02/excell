@@ -1,12 +1,20 @@
-
 <style>
     .center {
         text-align: center;
         vertical-align: middle;
     }
+
+    /* Center the table in the middle of the screen */
+    .table-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 13px;
+    }
 </style>
-<div>
-    <table class="table table-bordered">
+
+<div class="table-container">
+    <table class="table table-bordered" style="width: 50%;">
         <thead>
             <tr>
                 <th colspan='8' class='center'> BATCH 11</th>
@@ -34,31 +42,34 @@
             @foreach($listingData as $data)
                 <tr>
                     <td>{{ $data['barangay'] }}</td>
-                    <td>{{ $data['total_members'] }}</td>
-                    <td>{{ $data['district2_good'] }}</td>
-                    <td>{{ $data['district2_bad'] }}</td>
-                    <td>{{ $data['district1_good'] }}</td>
-                    <td>{{ $data['district1_bad'] }}</td>
+                    <td>{{ $data['D2_good_member'] }}</td>
+                    <td>{{ $data['D2_good_dependent'] }}</td>
+                    <td>{{ $data['D2_bad_member'] }}</td>
+                    <td>{{ $data['D2_bad_dependent'] }}</td>
+                    <td>{{ $data['member_district1'] }}</td>
+                    <td>{{ $data['dependent_distric1'] }}</td>
                 </tr>
             @endforeach
             <tr>
                 <td><strong>Total</strong></td>
-                <td><strong>{{ collect($listingData)->sum('district2_good') }}</strong></td>
-                <td><strong>{{ collect($listingData)->sum('district2_bad') }}</strong></td>
-                <td><strong>{{ collect($listingData)->sum('district1_good') }}</strong></td>
-                <td><strong>{{ collect($listingData)->sum('district1_bad') }}</strong></td>
+                <td><strong>{{ collect($listingData)->sum('D2_good_member') }}</strong></td>
+                <td><strong>{{ collect($listingData)->sum('D2_good_dependent') }}</strong></td>
+                <td><strong>{{ collect($listingData)->sum('D2_bad_member') }}</strong></td>
+                <td><strong>{{ collect($listingData)->sum('D2_bad_dependent') }}</strong></td>
+                <td><strong>{{ collect($listingData)->sum('member_district1') }}</strong></td>
+                <td><strong>{{ collect($listingData)->sum('dependent_distric1') }}</strong></td>
             </tr>
             <tr>
-                <th colspan='5'>MEMBER</th>
-                <th colspan='5'>MEMBER</th>
+                <td><strong>MEMBER : </strong></td>
+                <td colspan='7'></td>
             </tr>
             <tr>
-                <th colspan='5'>DEPENDENT</th>
-                <th colspan='5'>DEPENDENT</th>
+                <td><strong>DEPENDENT</strong></td>
+                <td colspan='7'></td>
             </tr>
             <tr>
-                <th colspan='5'>TOTAL</th>
-                <th colspan='5'>TOTAL</th>
+                <td><strong>TOTAL</strong></td>
+                <td colspan='7'></td>
             </tr>
         </tbody>
     </table>

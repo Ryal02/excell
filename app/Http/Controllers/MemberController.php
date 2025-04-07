@@ -47,7 +47,10 @@ class MemberController extends Controller
 
         // Paginate the filtered members (you can adjust the number of items per page as needed)
         $members = $query->paginate(10);
-
+        foreach ($members as $member) {
+            // Remove duplicates by using the unique method on the dependents collection
+            $member->dependents = $member->dependents->unique('dependents');
+        }
         // Pass the search term to the view to highlight matching results
         return view('import', compact('members', 'search'));
     }
@@ -161,39 +164,75 @@ class MemberController extends Controller
     public function viewListing(Request $request)
     {
         // Fetch all distinct barangays
-        $barangays = Member::select('barangay')->distinct()->get();
-    
+        $barangays = Member::select('brgy_d2')
+            ->whereNotNull('brgy_d2')  // Exclude NULL values
+            ->where('brgy_d2', '!=', '')  // Exclude empty strings
+            ->distinct()->get();
         // Initialize an array to store the data
         $listingData = [];
     
         foreach ($barangays as $barangay) {
+            $brgyD2 = $barangay->brgy_d2;
             // Get count of total members in the barangay
-            $totalMembers = Member::where('barangay', $barangay->barangay)->count();
-    
-            // Get count of members who have d1
-            $district1 = Member::where('barangay', $barangay->barangay)
-                                ->whereNotNull('d1')
-                                ->count();
-    
-            // Get count of members who do not have d1
-            $district1_bad = $totalMembers - $district1;
+            $D2GoodMembers = Member::where('brgy_d2', $barangay->brgy_d2)
+                ->whereNotNull('d2')
+                ->where('d2', '!=', '')  // Also exclude empty strings
+                ->count();
+
+            $D2BadMembers = Member::where('barangay', $barangay->brgy_d2)
+                ->where(function ($query) {
+                    $query->whereNull('d2')  // Ensure we're checking for NULL specifically
+                        ->orWhere('d2', ''); // Also include empty string if applicable
+                })
+                ->count();
+
+            $D2Gooddependent = Dependent::whereHas('member', function ($query) use ($barangay) {
+                    $query->where('brgy_d2', $barangay->brgy_d2);
+                })
+                ->whereNotNull('dep_d2')
+                ->distinct('dependents')
+                ->where('dep_d2', '!=', '') // If you want distinct dependent names
+                ->count();
+                
+                // Counting dependents without dep_d2
+            $D2Baddependent = Dependent::whereHas('member', function ($query) use ($barangay) {
+                    $query->where('brgy_d2', $barangay->brgy_d2);
+                })
+                ->where(function ($query) {
+                    // Check for dep_d2 being either NULL or an empty string
+                    $query->whereNull('dep_d2')
+                          ->orWhere('dep_d2', '');
+                })
+                ->count();
+
+            $memberdistrict1 = Member::where('barangay', $brgyD2)
+                ->whereNotNull('d1')
+                ->where('d1', '!=', '')
+                ->count();
     
             // Get count of members who have d2
-            $district2 = Member::where('barangay', $barangay->barangay)
-                                ->whereNotNull('d2')
-                                ->count();
-    
-            // Get count of members who do not have d2
-            $district2_bad = $totalMembers - $district2;
+            $dependentdistrict1 = Dependent::whereHas('member', function ($query) use ($brgyD2) {
+                    $query->where('brgy_d2', $brgyD2);
+                })
+                ->whereNotNull('dep_d1')
+                ->distinct('dependents')
+                ->where('dep_d1', '!=', '') // If you want distinct dependent names
+                ->count();
+                
+            $totalmember = Member::count();
+            $totalDependent = Dependent::count();
     
             // Store the data for each barangay
             $listingData[] = [
-                'barangay' => $barangay->barangay,
-                'total_members' => $totalMembers,
-                'district1_good' => $district1,
-                'district1_bad' => $district1_bad,
-                'district2_good' => $district2,
-                'district2_bad' => $district2_bad,
+                'barangay' => $barangay->brgy_d2,
+                'D2_good_member' => $D2GoodMembers,
+                'D2_good_dependent' => $D2Gooddependent,
+                'D2_bad_member' => $D2BadMembers,
+                'D2_bad_dependent' => $D2Baddependent,
+                'member_district1' => $memberdistrict1,
+                'dependent_distric1' => $dependentdistrict1,
+                'total_member' => $totalmember,
+                'total_dependent' => $totalDependent,
             ];
         }
     
