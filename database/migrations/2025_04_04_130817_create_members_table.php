@@ -25,9 +25,9 @@ class CreateMembersTable extends Migration
             $table->string('sitio_zone')->nullable();
             $table->string('cellphone')->nullable();
             $table->string('d2')->nullable();
-            $table->string('brgy_2')->nullable();
+            $table->string('brgy_d2')->nullable();
             $table->string('d1')->nullable();
-            $table->string('brgy_1')->nullable();
+            $table->string('brgy_d1')->nullable();
             $table->timestamps();
         });
 
@@ -35,12 +35,12 @@ class CreateMembersTable extends Migration
         Schema::create('dependents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade'); // Foreign key to members table
-            $table->string('dependent_name')->nullable();
-            $table->integer('dependent_age')->nullable();
-            $table->string('dependent_d2')->nullable();
-            $table->string('dependent_brgy_d2')->nullable();
-            $table->string('dependent_d1')->nullable();
-            $table->string('dependent_brgy_d1')->nullable();
+            $table->string('dependents')->nullable();
+            $table->integer('dep_age')->nullable();
+            $table->string('dep_d2')->nullable();
+            $table->string('dep_brgy_d2')->nullable();
+            $table->string('dep_d1')->nullable();
+            $table->string('dep_brgy_d1')->nullable();
             $table->timestamps();
         });
     }

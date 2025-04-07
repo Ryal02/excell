@@ -7,71 +7,100 @@ use App\Models\Dependent;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Illuminate\Support\Facades\Log;
 
 class MembersImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
-        // Create the member
-        $birthdate = $row['birthdate'];
+        // Trim spaces from each value to avoid hidden characters
+        $row = array_map('trim', $row);
 
-        // If birthdate is not empty or null, process it
-        if (!empty($birthdate)) {
-            // Check if the birthdate is numeric (Excel date timestamp)
-            if (is_numeric($birthdate)) {
-                try {
-                    // Convert Excel date to DateTime object
-                    $birthdateObj = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($birthdate);
-    
-                    // If the date is out of range or invalid, treat it as null
-                    if ($birthdateObj->getTimestamp() === false || $birthdateObj->format('Y-m-d') == '0000-00-00') {
-                        $birthdate = null; // Invalid date, set as null
-                    } else {
-                        // Format as 'Y-m-d' for database insertion
-                        $birthdate = $birthdateObj->format('Y-m-d');
+        static $lastSavedMemberId = null;
+
+        // Check if the row contains valid member data (name, age, etc.)
+        if (!empty($row['member']) && !empty($row['age']) && !empty($row['gender'])) {
+            // Valid member data: save the member
+            // Handle birthdate field
+            $birthdate = $row['birthdate'] ?? null;
+            if (!empty($birthdate)) {
+                if (is_numeric($birthdate)) {
+                    try {
+                        $birthdateObj = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($birthdate);
+                        if ($birthdateObj->getTimestamp() === false || $birthdateObj->format('Y-m-d') == '0000-00-00') {
+                            $birthdate = null;
+                        } else {
+                            $birthdate = $birthdateObj->format('Y-m-d');
+                        }
+                    } catch (\Exception $e) {
+                        $birthdate = null;
                     }
-                } catch (\Exception $e) {
-                    // If conversion fails, set date to null
+                } else {
                     $birthdate = null;
                 }
             } else {
-                // If it's not numeric (already a string), set it to null
                 $birthdate = null;
             }
-        } else {
-            // If no birthdate is provided (null or empty), set it as null
-            $birthdate = null;
+
+            // Handle age field
+            $age = null;
+            if (!empty($row['age']) && is_numeric($row['age'])) {
+                $age = (int) $row['age'];
+            }
+
+            // Create the member
+            $member = Member::create([
+                'barangay'    => $row['barangay'] ?? '',
+                'slp'         => $row['slp'] ?? '',
+                'member'      => $row['member'] ?? null,
+                'age'         => $age,
+                'gender'      => $row['gender'] ?? '',
+                'birthdate'   => $birthdate,
+                'sitio_zone'  => $row['sitio_zone'] ?? '',
+                'cellphone'   => $row['cellphone'] ?? '',
+                'd2'          => $row['d2'] ?? '',
+                'brgy_d2'     => $row['brgy_d2'] ?? '',
+                'd1'          => $row['d1'] ?? '',
+                'brgy_d1'     => $row['brgy_d1'] ?? '',
+            ]);
+
+            // Store the member_id of the last saved member
+            $lastSavedMemberId = $member->id;
+
+            // Check if dependents exist and insert them if needed
+            if (!empty($row['dependents'])) {
+                // Save the dependent associated with the current member
+                Dependent::create([
+                    'member_id'    => $lastSavedMemberId,
+                    'dependents'   => $row['dependents'], // Save the dependent's name
+                    'dep_age'      => $row['dep_age'] ?? '',
+                    'dep_d2'       => $row['dep_d2'] ?? '',
+                    'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                    'dep_d1'       => $row['dep_d1'] ?? '',
+                    'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                ]);
+            }
+
+            return $member;
         }
 
-
-        $member = Member::create([
-            'barangay'    => $row['barangay'],
-            'slp'         => $row['slp'],
-            'member'      => $row['agusan_member'],
-            'age'         => $row['age'],
-            'gender'      => $row['gender'],
-            'birthdate'   => $birthdate, // Use the validated birthdate
-            'sitio_zone'  => $row['sitio_zone'],
-            'cellphone'   => $row['cellphone'],
-            'd2'          => $row['d2'],
-            'brgy_2'      => $row['barangay'],
-            'd1'          => $row['d1'],
-            'brgy_1'      => $row['brgy_2'],
-        ]);
-
-        // Check if dependents exist, and insert them if needed
-        if (!empty($row['dependent_name'])) {
+        // If the row contains only dependents (no valid member data), save as dependent for the last valid member_id
+        if (!empty($row['dependents']) && $lastSavedMemberId !== null) {
+            // Log each dependent to verify
+            Log::info('Saving Dependent for Member ID ' . $lastSavedMemberId . ': ' . $row['dependents']);
+            
+            // Save the dependent using the last valid member_id
             Dependent::create([
-                'member_id'         => $member->id,
-                'dependent_name'    => $row['dependent_name'],
-                'dependent_age'     => $row['dependent_age'],
-                'dependent_d2'      => $row['dependent_d2'],
-                'dependent_brgy_d2' => $row['dependent_brgy_d2'],
-                'dependent_d1'      => $row['dependent_d1'],
-                'dependent_brgy_d1' => $row['dependent_brgy_d1'],
+                'member_id'    => $lastSavedMemberId,
+                'dependents'   => $row['dependents'], // Save the dependent's name
+                'dep_age'      => $row['dep_age'] ?? '',
+                'dep_d2'       => $row['dep_d2'] ?? '',
+                'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                'dep_d1'       => $row['dep_d1'] ?? '',
+                'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
             ]);
         }
 
-        return $member;
+        return null; // Return null to avoid saving the row as a member if it only contains dependents
     }
 }

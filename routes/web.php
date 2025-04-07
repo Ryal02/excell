@@ -1,16 +1,18 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Imports\MembersImport;
+use App\Exports\MembersExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\MemberController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
-    return view('import');
+    return redirect()->route('members.index');
 });
 
-Route::get('import', function() {
-    return view('import');
-});
+Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+Route::post('/members/store', [MemberController::class, 'store'])->name('members.store');
+Route::get('/listing', [MemberController::class, 'viewListing'])->name('members.viewListing');
 
 Route::post('import', function(Request $request) {
     $request->validate([
@@ -25,3 +27,8 @@ Route::post('import', function(Request $request) {
         return redirect()->back()->with('error', 'An error occurred while importing the file: ' . $e->getMessage());
     }
 });
+
+Route::get('export', function () {
+    return Excel::download(new MembersExport, 'members.xlsx');
+});
+

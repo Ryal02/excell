@@ -10,8 +10,8 @@ class Dependent extends Model
     use HasFactory;
 
     protected $fillable = [
-        'member_id', 'dependent_name', 'dependent_age', 'dependent_d2', 'dependent_brgy_d2',
-        'dependent_d1', 'dependent_brgy_d1'
+        'member_id', 'dependents', 'dep_age', 'dep_d2', 'dep_brgy_d2',
+        'dep_d1', 'dep_brgy_d1'
     ];
 
     public function member()
