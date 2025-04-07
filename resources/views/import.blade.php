@@ -7,6 +7,13 @@
     <title>Import Members</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto; /* Ensures horizontal scrolling */
+        }
+        .container {
+            max-width: 100%; /* Make sure the container uses the full width */
+        }
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -49,26 +56,25 @@
             <button type="submit" class="btn btn-primary">Upload Excel</button>
 
             <!-- Export Button -->
-            <a href="{{ url('export') }}" class="btn btn-success float-end">Export All Data to Excel</a>
+            <a href="{{ url('export') }}" class="btn btn-success float-end ms-2">Export All Data to Excel</a>
+            <button class="btn btn-success float-end " id="showFormButton">Add Data</button>
         </form>
 
    
         <!-- Search form -->
-        <form method="GET" action="{{ route('members.index') }}">
-            <div class="d-flex mb-3 mt-3">
-                <input type="text" name="search" id="searchInput" placeholder="Search..." value="{{ request()->search }}" class="form-control w-auto">
-                <button type="submit" class="btn btn-primary ms-2">Search</button>
-
+        <div class="d-flex mb-3 mt-3 justify-content-between">
+            <form method="GET" action="{{ route('members.index') }}">
+                <div class='d-flex'>
+                    <input type="text" name="search" id="searchInput" placeholder="Search..." value="{{ request()->search }}" class="form-control w-auto">
+                    <button type="submit" class="btn btn-primary ms-2">Search</button>
+                </div>
+            </form>
+            <div>
+                <button class="btn btn-info" id="viewListing">View Counts</button>
+                <button class="btn btn-info" id="viewTable">View Table List</button>
             </div>
-        </form>
-
-        <button class="btn btn-success" id="showFormButton">Add Data</button>
-        <!-- Category Buttons -->
-        <div class="mb-3 float-end">
-            <button class="btn btn-info" id="viewListing">View Counts</button>
-            <button class="btn btn-info" id="viewTable">View Table List</button>
         </div>
-      
+
         <div id="submitMessage" class="alert" style="display: none;"></div>
 
         <div class="form-box" id="formBox">
@@ -167,65 +173,78 @@
         <div id="dynamicTableContainer" style="display:none;"></div>
         <div id="listingTableContainer" style="display:none;"></div>
         <!-- Table for displaying the members and dependents data -->
-        <div  id="membersTableContainer" class="table table-bordered" style="display:none;">
-            <table class="table table-bordered" >
-                <thead>
-                    <tr>
-                        <th>BARANGAY</th>
-                        <th>SLP</th>
-                        <th>MEMBER</th>
-                        <th>AGE</th>
-                        <th>GENDER</th>
-                        <th>BIRTHDATE</th>
-                        <th>SITIO/ZONE</th>
-                        <th>CELLPHONE</th>
-                        <th>D2</th>
-                        <th>BRGY D2</th>
-                        <th>D1</th>
-                        <th>BRGY D1</th>
-                        <th>DEPENDENT</th>
-                        <th>DEP_AGE</th>
-                        <th>DEP_D2</th>
-                        <th>DEP_BRGY_D2</th>
-                        <th>DEP_D1</th>
-                        <th>DEP_BRGY_D1</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($members as $member)
+        <div id="membersTableContainer" style="display:none;">
+            <div class='table-responsive' style='max-width 100%; overflow-x: auton;'>
+                <table class="table table-bordered table-striped table-hover mb-0 w-full" >
+                    <thead class='table-dark text-nowrap'>
                         <tr>
-                            <td>{{ $member->barangay }}</td>
-                            <td>{{ $member->slp }}</td>
-                            <td>{{ $member->member }}</td>
-                            <td>{{ $member->age }}</td>
-                            <td>{{ $member->gender }}</td>
-                            <td>{{ $member->birthdate }}</td>
-                            <td>{{ $member->sitio_zone }}</td>
-                            <td>{{ $member->cellphone }}</td>
-                            <td>{{ $member->d2 }}</td>
-                            <td>{{ $member->brgy_d2 }}</td>
-                            <td>{{ $member->d1 }}</td>
-                            <td>{{ $member->brgy_d1 }}</td>
-                            <td>{{ $member->dependents->pluck('dependents')->implode(', ') }}</td>
-                            <td>{{ $member->dependents->pluck('dep_age')->implode(', ') }}</td>
-                            <td>{{ $member->dependents->pluck('dep_d2')->implode(', ') }}</td>
-                            <td>{{ $member->dependents->pluck('dep_brgy_d2')->implode(', ') }}</td>
-                            <td>{{ $member->dependents->pluck('dep_d1')->implode(', ') }}</td>
-                            <td>{{ $member->dependents->pluck('dep_brgy_d1')->implode(', ') }}</td>
+                            <th>BARANGAY</th>
+                            <th>SLP</th>
+                            <th>MEMBER</th>
+                            <th>AGE</th>
+                            <th>GENDER</th>
+                            <th>BIRTHDATE</th>
+                            <th>SITIO/ZONE</th>
+                            <th>CELLPHONE</th>
+                            <th>D2</th>
+                            <th>BRGY D2</th>
+                            <th>D1</th>
+                            <th>BRGY D1</th>
+                            <th>DEPENDENT</th>
+                            <th>DEP_AGE</th>
+                            <th>DEP_D2</th>
+                            <th>DEP_BRGY_D2</th>
+                            <th>DEP_D1</th>
+                            <th>DEP_BRGY_D1</th>
+                            <th>ACTIONS</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="17">No members found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($members as $member)
+                            <tr data-member-id="{{ $member->id }}">
+                                <td>{{ $member->barangay }}</td>
+                                <td>{{ $member->slp }}</td>
+                                <td>{{ $member->member }}</td>
+                                <td>{{ $member->age }}</td>
+                                <td>{{ $member->gender }}</td>
+                                <td>{{ $member->birthdate }}</td>
+                                <td>{{ $member->sitio_zone }}</td>
+                                <td>{{ $member->cellphone }}</td>
+                                <td>{{ $member->d2 }}</td>
+                                <td>{{ $member->brgy_d2 }}</td>
+                                <td>{{ $member->d1 }}</td>
+                                <td>{{ $member->brgy_d1 }}</td>
+                                <td>{{ $member->dependents->pluck('dependents')->implode(', ') }}</td>
+                                <td>{{ $member->dependents->pluck('dep_age')->implode(', ') }}</td>
+                                <td>{{ $member->dependents->pluck('dep_d2')->implode(', ') }}</td>
+                                <td>{{ $member->dependents->pluck('dep_brgy_d2')->implode(', ') }}</td>
+                                <td>{{ $member->dependents->pluck('dep_d1')->implode(', ') }}</td>
+                                <td>{{ $member->dependents->pluck('dep_brgy_d1')->implode(', ') }}</td>
+                                <td colspan='2' > 
+                                    <div class='d-flex justify-content-center gap-2'>
+                                        <button type='button' class='btn btn-primary' onclick="showEditForm({{ $member->id }})">
+                                            Update
+                                        </button>
+                                        <button type='button' class='btn btn-danger'>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="17">No members found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
 
-            <!-- Pagination Links -->
-            <div class="d-flex justify-content-center">
-                {{ $members->links('pagination::bootstrap-4') }}
-                <div class='mt-2 ms-5'>
-                    <strong>Total Members: </strong>{{ $members->total() }} <!-- Total count -->
+                <!-- Pagination Links -->
+                <div class="d-flex justify-content-center">
+                    {{ $members->links('pagination::bootstrap-4') }}
+                    <div class='mt-2 ms-5'>
+                        <strong>Total Members: </strong>{{ $members->total() }} <!-- Total count -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -435,6 +454,50 @@
                 $(tableId).show();
             }
         });
+    </script>
+    <script>
+         function showEditForm(memberId) {
+            fetch(`/members/${memberId}/edit`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();  // Parse the JSON response
+                })
+                .then(data => {
+                    console.log(data); // Log the response data to check if it's correct
+
+                    if (data.success) {
+                        // Dynamically update the form action URL with the memberId
+                        const formActionUrl = `/members/${memberId}`;
+                        document.getElementById('editMemberForm').action = formActionUrl;
+
+                        // Pre-fill the form with the fetched member data
+                        const member = data.member;
+                        document.getElementById('memberId').value = member.id;
+                        document.getElementById('barangay').value = member.barangay;
+                        document.getElementById('slp').value = member.slp;
+                        document.getElementById('member').value = member.member;
+                        // Add other fields if necessary
+
+                        // Show the Edit Form
+                        document.getElementById('edit-file').style.display = 'block'; // Show edit form
+                        document.getElementById('membersTableContainer').style.display = 'none'; // Hide the table
+                    } else {
+                        alert('Member data could not be retrieved.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('There was an error with the request: ' + error.message);
+                });
+        }
+
+        // Optionally define hideEditForm function
+        function hideEditForm() {
+            document.getElementById('edit-file').style.display = 'none';
+            document.getElementById('membersTableContainer').style.display = 'block';
+        }
     </script>
 
 </body>

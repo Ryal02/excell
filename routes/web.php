@@ -13,6 +13,8 @@ Route::get('/', function () {
 Route::get('/members', [MemberController::class, 'index'])->name('members.index');
 Route::post('/members/store', [MemberController::class, 'store'])->name('members.store');
 Route::get('/listing', [MemberController::class, 'viewListing'])->name('members.viewListing');
+Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
+Route::put('/members/{id}/update', [MemberController::class, 'update'])->name('members.update');
 
 Route::post('import', function(Request $request) {
     $request->validate([

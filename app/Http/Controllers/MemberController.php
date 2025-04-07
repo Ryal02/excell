@@ -93,6 +93,70 @@ class MemberController extends Controller
         // Send a success response with a message
         return response()->json(['message' => 'Member saved successfully!']);
     }
+    public function edit($id)
+    {
+        $member = Member::findOrFail($id);
+        
+        // Return JSON response
+        return response()->json([
+            'success' => true,
+            'member' => $member,
+        ]);
+    }
+    
+    
+
+    public function update(Request $request, $id)
+    {
+        // Find the member by ID
+        $member = Member::find($id);
+        
+        if (!$member) {
+            return response()->json(['message' => 'Member not found'], 404);
+        }
+
+        // Validate the request data
+        $validated = $request->validate([
+            'barangay' => 'nullable|string|max:255',
+            'slp' => 'nullable|string|max:255',
+            'member' => 'nullable|string|max:255',
+            'age' => 'nullable|integer',
+            'gender' => 'nullable|string|max:10',
+            'birthdate' => 'nullable|date',
+            'sitio_zone' => 'nullable|string|max:255',
+            'cellphone' => 'nullable|string|max:15',
+            'd2' => 'nullable|string|max:255',
+            'brgy_d2' => 'nullable|string|max:255',
+            'd1' => 'nullable|string|max:255',
+            'brgy_d1' => 'nullable|string|max:255',
+            // Same validation for dependents
+            'dependents' => 'nullable|array',
+            'dependents.*.name' => 'nullable|string|max:255',
+            'dependents.*.age' => 'nullable|integer',
+            'dependents.*.d2' => 'nullable|string|max:255',
+            'dependents.*.brgy_d2' => 'nullable|string|max:255',
+            'dependents.*.d1' => 'nullable|string|max:255',
+            'dependents.*.brgy_d1' => 'nullable|string|max:255',
+        ]);
+
+        // Update the member with validated data
+        $member->update($validated);
+
+        // Update the dependents if they exist
+        if ($request->has('dependents')) {
+            // Delete existing dependents
+            $member->dependents()->delete();
+            
+            // Save new dependents
+            foreach ($request->dependents as $dependentData) {
+                $dependent = new Dependent($dependentData);
+                $member->dependents()->save($dependent);
+            }
+        }
+
+        // Return a success message
+        return response()->json(['message' => 'Member updated successfully!']);
+    }
 
     public function viewListing(Request $request)
     {
