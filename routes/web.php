@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Imports\MembersImport;
 use App\Exports\MembersExport;
+use App\Exports\MemberDepExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MemberController;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ Route::post('/members/store', [MemberController::class, 'store'])->name('members
 Route::get('/listing', [MemberController::class, 'viewListing'])->name('members.viewListing');
 Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
 Route::put('/members/{id}/update', [MemberController::class, 'update'])->name('members.update');
+// slp
+Route::get('/members/slp/{slp}/dependents', [MemberController::class, 'getDependentsBySlp'])->name('members.getDependentsBySlp');
 
 Route::post('import', function(Request $request) {
     $request->validate([
@@ -33,4 +36,6 @@ Route::post('import', function(Request $request) {
 Route::get('export', function () {
     return Excel::download(new MembersExport, 'members.xlsx');
 });
+Route::post('/export-visible-members', [MemberDepExport::class, 'export'])->name('export.visibleMembers');
+
 

@@ -51,8 +51,9 @@ class MemberController extends Controller
             // Remove duplicates by using the unique method on the dependents collection
             $member->dependents = $member->dependents->unique('dependents');
         }
+        $slpmembers = Member::all();
         // Pass the search term to the view to highlight matching results
-        return view('import', compact('members', 'search'));
+        return view('import', compact('members', 'search', 'slpmembers'));
     }
 
     public function store(Request $request)
@@ -240,5 +241,14 @@ class MemberController extends Controller
         return view('listing', compact('listingData'));
     }
     
+    //SLP
+    public function getDependentsBySlp($slp)
+    {
+        // Fetch all members with the given 'slp'
+        $members = Member::where('slp', $slp)->with('dependents')->get();
+        $barangay = $members->first()->barangay; // Adjust the 'barangay' attribute if needed
 
+        // Return a view to display the dependents
+        return view('slp-list', compact('members', 'barangay', 'slp'));
+    }
 }

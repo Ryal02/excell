@@ -70,6 +70,17 @@
                 </div>
             </form>
             <div>
+                @php
+                    $uniqueSlps = $slpmembers->pluck('slp')->unique();
+                @endphp
+
+                <select class="btn btn-info" id="viewSLP">
+                    <option value="">Select SLP</option>
+                    @foreach($uniqueSlps as $slp)
+                        <option value="{{ $slp }}">{{ $slp }}</option>
+                    @endforeach
+                </select>
+
                 <button class="btn btn-info" id="viewListing">View Counts</button>
                 <button class="btn btn-info" id="viewTable">View Table List</button>
             </div>
@@ -444,6 +455,10 @@
                 showTable('#listingTableContainer');
             });
 
+            // $('#viewSLP').on('click', function() {
+            //     showTable('#dynamicTableContainer');
+            // });
+
             // Function to show a specific table and hide others
             function showTable(tableId) {
                 // Hide all tables
@@ -500,6 +515,30 @@
         }
     </script>
 
+    <!-- SLP  -->
+    <script>
+        $(document).ready(function() {
+            $('#viewSLP').on('change', function() {
+                var selectedSlp = $(this).val();
+                console.log(selectedSlp);  // Add this line to check if the value is correct
+                if (selectedSlp) {
+                    // Send AJAX request to fetch data based on the selected slp
+                    $.ajax({
+                        url: '/members/slp/' + selectedSlp + '/dependents', // Adjust this route accordingly
+                        type: 'GET',
+                        success: function(data) {
+                            $('#dynamicTableContainer').html(data).show();
+                        },
+                        error: function() {
+                            alert('An error occurred while fetching the data.');
+                        }
+                    });
+                } else {
+                    $('#dynamicTableContainer').hide();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 
