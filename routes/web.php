@@ -36,6 +36,10 @@ Route::post('import', function(Request $request) {
 Route::get('export', function () {
     return Excel::download(new MembersExport, 'members.xlsx');
 });
-Route::post('/export-visible-members', [MemberDepExport::class, 'export'])->name('export.visibleMembers');
+Route::post('/export-visible-members', function (Request $request) {
+    // Decode the data passed from frontend
+    $data = json_decode($request->input('data'), true);
 
-
+    // Return the data as an Excel download
+    return Excel::download(new MemberDepExport($data), 'visible_members.xlsx');
+})->name('export.visibleMembers');

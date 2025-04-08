@@ -42,7 +42,7 @@
 
 <div class="print-button-container">
     <button class="btn btn-primary" id="printBtn">Print</button>
-    <a href="{{ url('export-members') }}" class="btn btn-success" id="exportBtn">Export to Excel</a>
+    <a href="#" class="btn btn-success" id="exportBtn">Export to Excel</a>
 </div>
 <div class="info-container">
     <p>BARANGAY: <span class="bold-text">{{$barangay}}</span></p>
@@ -72,6 +72,9 @@
                 @endforeach
             </tbody>
         </table>
+        <div class="total-count">
+            <p>Total Bad Members: {{ $members->count() }}</p>
+        </div>
     </div>
 
     <!-- Dependents Table -->
@@ -82,23 +85,20 @@
                 <tr>
                     <th>Dependent Name</th>
                     <th>Age</th>
-                    <th>Cellphone</th>
-                    <th>Barangay</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($members as $member)
-                    @foreach($member->dependents as $dependent)
-                        <tr>
-                            <td>{{ $dependent->dependents }}</td>
-                            <td>{{ $dependent->dep_age }}</td>
-                            <td>{{ $dependent->dep_cellphone }}</td>
-                            <td>{{ $dependent->dep_brgy_d2 }}</td>
-                        </tr>
-                    @endforeach
+                @foreach($dependents as $dependent)
+                    <tr>
+                        <td>{{ $dependent->dependents }}</td>
+                        <td>{{ $dependent->dep_age }}</td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
+        <div class="total-count">
+            <p>Total Bad Dependent: {{ $dependents->count() }}</p>
+        </div>
     </div>
 </div>
 
@@ -118,41 +118,43 @@
 
 <script>
     document.getElementById('exportBtn').addEventListener('click', function() {
-        var membersTable = document.querySelector(".table-container:nth-child(1) table tbody"); // Get the Members table rows
-        var dependentsTable = document.querySelector(".table-container:nth-child(2) table tbody"); // Get the Dependents table rows
-        
+        var membersTable = document.querySelector(".table-container:nth-child(1) table tbody");
+        var dependentsTable = document.querySelector(".table-container:nth-child(2) table tbody");
+
         // Gather the rows from both tables
         var membersData = Array.from(membersTable.rows).map(row => {
             return Array.from(row.cells).map(cell => cell.textContent.trim());
         });
-        
+
         var dependentsData = Array.from(dependentsTable.rows).map(row => {
             return Array.from(row.cells).map(cell => cell.textContent.trim());
         });
-        
+
         // Combine the two datasets (members and dependents)
         var allData = [...membersData, ...dependentsData];
-        
-        // Create a form to send the data to the server for export
+
+        // Log the data to verify the structure before sending it
+        console.log(allData);  // <-- Add this line
+
+        // Create the form to submit data
         var form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/export-visible-members'; // The endpoint to handle the export
+        form.action = '/export-visible-members'; 
 
         var dataInput = document.createElement('input');
         dataInput.type = 'hidden';
         dataInput.name = 'data';
-        dataInput.value = JSON.stringify(allData); // Send the data as a JSON string
+        dataInput.value = JSON.stringify(allData); 
         form.appendChild(dataInput);
 
-        // Append the CSRF token for security
         var csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = '_token';
-        csrfInput.value = '{{ csrf_token() }}'; // Add CSRF token
+        csrfInput.value = '{{ csrf_token() }}'; 
         form.appendChild(csrfInput);
 
-        // Submit the form
         document.body.appendChild(form);
         form.submit();
     });
+
 </script>

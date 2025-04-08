@@ -56,6 +56,7 @@ class MembersImport implements ToModel, WithHeadingRow
                 'slp' => $row['slp'] ?? '',
                 'age' => $age,
                 'gender' => $row['gender'] ?? '',
+                'birthdate' => $birthdate,
                 'sitio_zone' => $row['sitio_zone'] ?? '',
                 'cellphone' => $row['cellphone'] ?? '',
                 'd2' => $row['d2'] ?? '',

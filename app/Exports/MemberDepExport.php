@@ -2,44 +2,40 @@
 
 namespace App\Exports;
 
-use App\Models\Member;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
 
 class MemberDepExport implements FromCollection, WithHeadings
 {
-    public function export(Request $request)
+    private $data;
+
+    // Constructor to accept data passed from the route or request
+    public function __construct($data)
     {
-        // Decode the data passed from frontend
-        $data = json_decode($request->input('data'), true);
+        $this->data = $data;
+    }
 
-        // Return the data as an Excel download
-        return Excel::download(new class($data) implements FromCollection, WithHeadings {
-            private $data;
+    // Implement the collection() method to return the data as a collection
+    public function collection()
+    {
+        // Return the data as a collection
+        return collect($this->data);
+    }
 
-            public function __construct($data)
-            {
-                $this->data = $data;
-            }
-
-            public function collection()
-            {
-                return collect($this->data);
-            }
-
-            public function headings(): array
-            {
-                return [
-                    'Member Name',
-                    'Birthdate',
-                    'Zone/Sitio',
-                    'Cellphone',
-                    'Dependent Name',
-                    'Dependent Age',
-                    'Dependent Cellphone',
-                    'Dependent Barangay',
-                ];
-            }
-        }, 'visible_members.xlsx');
+    // Implement the headings() method to return the column headers
+    public function headings(): array
+    {
+        return [
+            'Member Name',
+            'Birthdate',
+            'Zone/Sitio',
+            'Cellphone',
+            'Dependent Name',
+            'Dependent Age',
+            'Dependent Cellphone',
+            'Dependent Barangay',
+        ];
     }
 }

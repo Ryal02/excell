@@ -244,11 +244,29 @@ class MemberController extends Controller
     //SLP
     public function getDependentsBySlp($slp)
     {
-        // Fetch all members with the given 'slp'
-        $members = Member::where('slp', $slp)->with('dependents')->get();
-        $barangay = $members->first()->barangay; // Adjust the 'barangay' attribute if needed
-
+        // Fetch members with the given 'slp' and where 'member' column does not contain 'd2'
+        $members = Member::where('slp', $slp)
+            ->where(function($query) {
+                $query->whereNull('d2')
+                    ->orWhere('d2', ''); // Exclude members with NULL or empty string in 'd2' column
+            })
+            ->get();
+        $dependents = Dependent::join('members', 'dependents.member_id', '=', 'members.id')
+            ->where(function ($query) {
+                $query->whereNull('dependents.dep_d2')
+                      ->orWhere('dependents.dep_d2', ''); // Filter dependents where 'dep_d2' is NULL or empty
+            })
+            ->where('members.slp', $slp) // Filter by member's slp
+            ->get();
+        // Assuming 'barangay' is associated with the first member (you might need to adjust if needed)
+        if ($members->isEmpty()) {
+            $barangay = Member::where('slp', $slp)->value('barangay') ?: null;
+        } else {
+            // If members are found, get the barangay from the first member or fallback to brgy_d2
+            $barangay = $members->first()->barangay ?: $members->first()->brgy_d2;
+        }
+        
         // Return a view to display the dependents
-        return view('slp-list', compact('members', 'barangay', 'slp'));
+        return view('slp-list', compact('members', 'dependents', 'barangay', 'slp'));
     }
 }
