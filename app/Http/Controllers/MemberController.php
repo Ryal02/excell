@@ -302,7 +302,7 @@ class MemberController extends Controller
     public function getAllDependents()
     {
         // Get all distinct SLP values
-        $slps = SLP::all();  // Adjust this depending on how you store 'SLP'
+        $slps = Member::select('slp')->get();  // Adjust this depending on how you store 'SLP'
     
         // For each SLP, get the members and dependents
         $slpData = [];
@@ -320,13 +320,66 @@ class MemberController extends Controller
                           ->orWhere('dependents.dep_d2', '');
                 })->get();
     
-            $slpData[] = [
-                'slp' => $slp,
-                'members' => $members,
-                'dependents' => $dependents
-            ];
+            if ($members->isEmpty()) {
+                $barangay = Member::where('slp', $slp)->value('barangay') ?: null;
+            } else {
+                // If members are found, get the barangay from the first member or fallback to brgy_d2
+                $barangay = $members->first()->barangay ?: $members->first()->brgy_d2;
+            }
+            
+            if ($members->isNotEmpty() && $dependents->isNotEmpty()) {
+                $slpData[] = [
+                    'slp' => $slp,
+                    'members' => $members,
+                    'dependents' => $dependents
+                ];
+            }
         }
     
+        // Pass the data to the view
+        return view('all-slp-list', compact('slpData'));
+    }
+
+    public function getD1membersDep() {
+        $slps = Member::distinct()->pluck('slp');  // Fetch only unique 'slp' values
+
+        $slpData = [];
+        foreach ($slps as $slp) {
+            
+            // Fetch all members with the current 'slp' and 'd1' being null or empty
+            $members = Member::where('slp', $slp)
+                ->where(function($query) {
+                    $query->whereNotNull('d1')
+                        ->where('d1', '!=', '');  // `d1` should neither be null nor an empty string
+                })
+                ->get();
+            
+            // Fetch all dependents with the current 'slp' and 'dep_d1' being null or empty
+            $dependents = Dependent::join('members', 'dependents.member_id', '=', 'members.id')
+                ->where('members.slp', $slp)
+                ->where(function($query) {
+                    $query->whereNotNull('dependents.dep_d1')
+                        ->where('dependents.dep_d1', '!=', '');  // Ensure dep_d1 is not null and not empty
+                })
+                ->get();
+
+            if ($members->isEmpty()) {
+                $barangay = Member::where('slp', $slp)->value('barangay') ?: null;
+            } else {
+                // If members are found, get the barangay from the first member or fallback to brgy_d2
+                $barangay = $members->first()->barangay ?: $members->first()->brgy_d1;
+            }
+
+            // Store the results for the current 'slp'
+            if ($members->isNotEmpty() || $dependents->isNotEmpty()) {
+                $slpData[] = [
+                    'slp' => $slp,
+                    'members' => $members,
+                    'barangay' => $barangay,
+                    'dependents' => $dependents
+                ];
+            }
+        }
         // Pass the data to the view
         return view('all-slp-list', compact('slpData'));
     }

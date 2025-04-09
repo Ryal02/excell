@@ -22,6 +22,7 @@ Route::put('/members/{id}/update', [MemberController::class, 'update'])->name('m
 Route::get('/members/slp/{slp}/dependents', [MemberController::class, 'getDependentsBySlp'])->name('members.getDependentsBySlp');
 // slp good
 Route::get('/members/slp/{slp}/dependents-good', [MemberController::class, 'getDependentsBygoodSlp'])->name('members.getDependentsBygoodSlp');
+Route::get('/members/d1', [MemberController::class, 'getD1membersDep'])->name('members.getD1membersDep');
 
 Route::get('/members/slp/all/dependents', [MemberController::class, 'getAllDependents'])->name('members.getAllDependents');
 

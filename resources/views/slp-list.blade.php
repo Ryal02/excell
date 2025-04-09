@@ -112,19 +112,58 @@ document.getElementById('printBtn').addEventListener('click', function() {
         <head>
             <title>Print</title>
             <style>
-                body { font-family: Arial, sans-serif; font-size: 10px; }
-                .flex-container { display: block; }
-                .table-container { display: inline-block; width: 48%; }
-                table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-                th, td { padding: 3px; text-align: left; border: 1px solid #ddd; }
-                h3 { text-align: center; font-size: 12px; }
-                .total-count { text-align: center; font-size: 10px; }
+            body { font-family: Arial, sans-serif; font-size: 8px; }  /* Reduced font size */
+                .flex-container { 
+                    display: flex;
+                    justify-content: space-between;  /* Ensure tables are side by side */
+                    padding-top: 0px;
+                    gap: 10px;  /* Reduced space between the tables */
+                }
+                .table-container, .table-container2 {
+                    display: block;
+                    flex-grow: 1;  /* Allow tables to grow and fill available space */
+                    width: 48%;  /* Make each table take 48% of the width, leaving space between */
+                    padding: 1%;
+                }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    table-layout: auto;  /* Let the table adjust column widths automatically */
+                    word-wrap: break-word; /* Break long words in table cells */
+                }
+                th, td { 
+                    padding: 4px; /* Reduced padding */
+                    text-align: left; 
+                    border: 1px solid #ddd;
+                    white-space: normal;  /* Prevent text overflow and allow wrapping */
+                    word-wrap: break-word;  /* Break long text in cells */
+                    font-size: 8px; /* Reduced font size in table */
+                }
+                h3 { 
+                    text-align: center; 
+                    font-size: 10px; /* Reduced font size for headers */
+                    margin: 0; /* Reduced margin for h3 */
+                }
+                .total-count { 
+                    text-align: center; 
+                    font-size: 8px; /* Reduced font size for the total count */
+                    margin-top: 5px;
+                }
+                @media print {
+                    .flex-container {
+                        flex-direction: row; /* Keep the tables in a row when printing */
+                    }
+                    .table-container, .table-container2 {
+                        padding: 0;
+                        width: 50%;
+                    }
+                }
             </style>
         </head>
         <body>
             <div class="info-container">
-                <p>BARANGAY: <span class="bold-text">${{ $barangay }}</span></p>
-                <p>SLP: <span class="bold-text">{{ $slp ?? 'All' }}</span></p>
+                <p style="font-size: 8px;">BARANGAY: <span class="bold-text">${{ $barangay }}</span></p>
+                <p style="font-size: 8px;">SLP: <span class="bold-text">{{ $slp ?? 'All' }}</span></p>
             </div>
             <div class="flex-container">
                 <div class="table-container">
@@ -147,11 +186,14 @@ document.getElementById('printBtn').addEventListener('click', function() {
                                     <td>{{ $member->cellphone }}</td>
                                 </tr>
                             @endforeach
+                                <tr>
+                                    <th colspan='4' >Total Members: {{ $members->count() }}</tht>
+                                </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div class="table-container">
+                <div class="table-container2">
                     <h3>Dependents</h3>
                     <table class="table">
                         <thead>
@@ -167,6 +209,9 @@ document.getElementById('printBtn').addEventListener('click', function() {
                                     <td>{{ $dependent->dep_age }}</td>
                                 </tr>
                             @endforeach
+                                <tr>
+                                    <th colspan='2'>Total Members: {{ $dependents->count() }}</tht>
+                                </tr>
                         </tbody>
                     </table>
                 </div>

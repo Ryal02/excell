@@ -73,6 +73,7 @@
                 @php
                     $uniqueSlps = $slpmembers->pluck('slp')->unique();
                 @endphp
+                <button class="btn btn-info" id="viewD1">View Good D1</button>
                 <select class="btn btn-info" id="viewgoodSLP">
                     <option value="">Select GOOD SLP</option>
                     <option value="All"> All </option>
@@ -601,6 +602,23 @@
             });
         });
     </script>
+     <script>
+        $(document).ready(function() {
+            $('#viewD1').on('click', function() {
+                $.ajax({
+                    url: '/members/d1', // New route for fetching all data
+                    type: 'GET',
+                    success: function(data) {
+                        $('#dynamicTableContainer').html(data).show();
+                    },
+                    error: function() {
+                        alert('An error occurred while fetching the data.');
+                    }
+                });
+            });
+        });
+    </script>
+
 
 </body>
 </html>
