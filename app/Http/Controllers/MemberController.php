@@ -269,4 +269,66 @@ class MemberController extends Controller
         // Return a view to display the dependents
         return view('slp-list', compact('members', 'dependents', 'barangay', 'slp'));
     }
+
+    //GOOOD SLP
+    public function getDependentsBygoodSlp($slp)
+    {
+        // Fetch members with the given 'slp' and where 'member' column does not contain 'd2'
+        $members = Member::where('slp', $slp)
+            ->where(function($query) {
+                $query->whereNotNull('d2')
+                    ->Where('d2', '!=', ''); // Exclude members with NULL or empty string in 'd2' column
+            })
+            ->get();
+        $dependents = Dependent::join('members', 'dependents.member_id', '=', 'members.id')
+            ->where(function ($query) {
+                $query->whereNotNull('dependents.dep_d2')
+                      ->Where('dependents.dep_d2', '!=', ''); // Filter dependents where 'dep_d2' is NULL or empty
+            })
+            ->where('members.slp', $slp) // Filter by member's slp
+            ->get();
+        // Assuming 'barangay' is associated with the first member (you might need to adjust if needed)
+        if ($members->isEmpty()) {
+            $barangay = Member::where('slp', $slp)->value('barangay') ?: null;
+        } else {
+            // If members are found, get the barangay from the first member or fallback to brgy_d2
+            $barangay = $members->first()->barangay ?: $members->first()->brgy_d2;
+        }
+        
+        // Return a view to display the dependents
+        return view('good-slp-list', compact('members', 'dependents', 'barangay', 'slp'));
+    }
+
+    public function getAllDependents()
+    {
+        // Get all distinct SLP values
+        $slps = SLP::all();  // Adjust this depending on how you store 'SLP'
+    
+        // For each SLP, get the members and dependents
+        $slpData = [];
+        foreach ($slps as $slp) {
+            $members = Member::where('slp_id', $slp->id) // Assuming 'slp_id' connects to SLP
+                ->where(function($query) {
+                    $query->whereNull('d2')
+                          ->orWhere('d2', '');
+                })->get();
+    
+            $dependents = Dependent::join('members', 'dependents.member_id', '=', 'members.id')
+                ->where('members.slp_id', $slp->id)
+                ->where(function($query) {
+                    $query->whereNull('dependents.dep_d2')
+                          ->orWhere('dependents.dep_d2', '');
+                })->get();
+    
+            $slpData[] = [
+                'slp' => $slp,
+                'members' => $members,
+                'dependents' => $dependents
+            ];
+        }
+    
+        // Pass the data to the view
+        return view('all-slp-list', compact('slpData'));
+    }
+    
 }

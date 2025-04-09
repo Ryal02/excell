@@ -73,9 +73,16 @@
                 @php
                     $uniqueSlps = $slpmembers->pluck('slp')->unique();
                 @endphp
-
+                <select class="btn btn-info" id="viewgoodSLP">
+                    <option value="">Select GOOD SLP</option>
+                    <option value="All"> All </option>
+                    @foreach($uniqueSlps as $slp)
+                        <option value="{{ $slp }}">{{ $slp }}</option>
+                    @endforeach
+                </select>
                 <select class="btn btn-info" id="viewSLP">
-                    <option value="">Select SLP</option>
+                    <option value="">Select BAD SLP</option>
+                    <option value="All"> All </option>
                     @foreach($uniqueSlps as $slp)
                         <option value="{{ $slp }}">{{ $slp }}</option>
                     @endforeach
@@ -520,25 +527,81 @@
         $(document).ready(function() {
             $('#viewSLP').on('change', function() {
                 var selectedSlp = $(this).val();
-                console.log(selectedSlp);  // Add this line to check if the value is correct
+                console.log(selectedSlp);  // Check if the value is correct
+
                 if (selectedSlp) {
-                    // Send AJAX request to fetch data based on the selected slp
-                    $.ajax({
-                        url: '/members/slp/' + selectedSlp + '/dependents', // Adjust this route accordingly
-                        type: 'GET',
-                        success: function(data) {
-                            $('#dynamicTableContainer').html(data).show();
-                        },
-                        error: function() {
-                            alert('An error occurred while fetching the data.');
-                        }
-                    });
+                    if (selectedSlp === "All") {
+                        
+                        // If "All" is selected, display all data for both tables
+                        $.ajax({
+                            url: '/members/slp/all/dependents', // New route for fetching all data
+                            type: 'GET',
+                            success: function(data) {
+                                $('#dynamicTableContainer').html(data).show();
+                            },
+                            error: function() {
+                                alert('An error occurred while fetching the data.');
+                            }
+                        });
+                    } else {
+                        // If a specific SLP is selected, fetch data for that SLP
+                        $.ajax({
+                            url: '/members/slp/' + selectedSlp + '/dependents', // Existing route for specific SLP
+                            type: 'GET',
+                            success: function(data) {
+                                $('#dynamicTableContainer').html(data).show();
+                            },
+                            error: function() {
+                                alert('An error occurred while fetching the data.');
+                            }
+                        });
+                    }
                 } else {
                     $('#dynamicTableContainer').hide();
                 }
             });
         });
     </script>
+    <script>
+        $(document).ready(function() {
+            $('#viewgoodSLP').on('change', function() {
+                var selectedSlp = $(this).val();
+                console.log(selectedSlp);  // Check if the value is correct
+
+                if (selectedSlp) {
+                    if (selectedSlp === "All") {
+                        
+                        // If "All" is selected, display all data for both tables
+                        $.ajax({
+                            url: '/members/slp/all/dependents', // New route for fetching all data
+                            type: 'GET',
+                            success: function(data) {
+                                $('#dynamicTableContainer').html(data).show();
+                            },
+                            error: function() {
+                                alert('An error occurred while fetching the data.');
+                            }
+                        });
+                    } else {
+                        // If a specific SLP is selected, fetch data for that SLP
+                        $.ajax({
+                            url: '/members/slp/' + selectedSlp + '/dependents-good', // Existing route for specific SLP
+                            type: 'GET',
+                            success: function(data) {
+                                $('#dynamicTableContainer').html(data).show();
+                            },
+                            error: function() {
+                                alert('An error occurred while fetching the data.');
+                            }
+                        });
+                    }
+                } else {
+                    $('#dynamicTableContainer').hide();
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
 

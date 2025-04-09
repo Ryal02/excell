@@ -58,8 +58,8 @@
                 <tr>
                     <th>Member Name</th>
                     <th>Birthdate</th>
-                    <th>Zone/Sitio</th>
-                    <th>Cellphone</th>
+                    <th>Precint</th>
+                    <th>Barangay D2</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,8 +67,8 @@
                     <tr>
                         <td>{{ $member->member }}</td>
                         <td>{{ $member->birthdate }}</td>
-                        <td>{{ $member->sitio_zone }}</td>
-                        <td>{{ $member->cellphone }}</td>
+                        <td>{{ $member->d2 }}</td>
+                        <td>{{ $member->brgy_d2 }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -85,6 +85,8 @@
             <thead>
                 <tr>
                     <th>Dependent Name</th>
+                    <th>Precint</th>
+                    <th>Barangay D2</th>
                     <th>Age</th>
                 </tr>
             </thead>
@@ -92,6 +94,8 @@
                 @foreach($dependents as $dependent)
                     <tr>
                         <td>{{ $dependent->dependents }}</td>
+                        <td>{{ $dependent->dep_d2 }}</td>
+                        <td>{{ $dependent->dep_brgy_d2 }}</td>
                         <td>{{ $dependent->dep_age }}</td>
                     </tr>
                 @endforeach
@@ -134,8 +138,8 @@ document.getElementById('printBtn').addEventListener('click', function() {
                             <tr>
                                 <th>Member Name</th>
                                 <th>Birthdate</th>
-                                <th>Zone/Sitio</th>
-                                <th>Cellphone</th>
+                                <th>Precint</th>
+                                <th>Barangay D2</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,8 +147,8 @@ document.getElementById('printBtn').addEventListener('click', function() {
                                 <tr>
                                     <td>{{ $member->member }}</td>
                                     <td>{{ $member->birthdate }}</td>
-                                    <td>{{ $member->sitio_zone }}</td>
-                                    <td>{{ $member->cellphone }}</td>
+                                    <td>{{ $member->d2 }}</td>
+                                    <td>{{ $member->brgy_d2 }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -157,6 +161,8 @@ document.getElementById('printBtn').addEventListener('click', function() {
                         <thead>
                             <tr>
                                 <th>Dependent Name</th>
+                                <th>Precint</th>
+                                <th>Barangay D2</th>
                                 <th>Age</th>
                             </tr>
                         </thead>
@@ -164,6 +170,8 @@ document.getElementById('printBtn').addEventListener('click', function() {
                             @foreach($dependents as $dependent)
                                 <tr>
                                     <td>{{ $dependent->dependents }}</td>
+                                    <td>{{ $dependent->dep_d2 }}</td>
+                                    <td>{{ $dependent->dep_brgy_d2 }}</td>
                                     <td>{{ $dependent->dep_age }}</td>
                                 </tr>
                             @endforeach
