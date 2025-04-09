@@ -177,7 +177,9 @@ document.getElementById('printBtn').addEventListener('click', function() {
                 }
 
                 .info-container {
+                    text-align: center;
                     margin-bottom: 20px;
+                    margin-top: 40px;
                 }
 
                 .flex-container {
@@ -230,8 +232,8 @@ document.getElementById('printBtn').addEventListener('click', function() {
         </head>
         <body>
             <div class="info-container">
-                <p>BARANGAY: <span class="bold-text">${{ $barangay }}</span></p>
-                <p>SLP: <span class="bold-text">${{ $slp }}</span></p>
+                <p>BARANGAY: <span class="bold-text">{{ $barangay }}</span></p>
+                <p>SLP: <span class="bold-text">{{ $slp }}</span></p>
             </div>
             <div class="flex-container">
                 <div class="table-container">
