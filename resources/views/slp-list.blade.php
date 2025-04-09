@@ -102,19 +102,197 @@
     </div>
 </div>
 
+<div class="info-container">
+    <p>BARANGAY: <span class="bold-text">{{$barangay}}</span></p>
+    <p>SLP: <span class="bold-text">{{ $slp }}</span></p>
+</div>
+
+<div class="flex-container">
+    <!-- Members Table -->
+    <div class="table-container">
+        <h3>Members</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Member Name</th>
+                    <th>Birthdate</th>
+                    <th>Zone/Sitio</th>
+                    <th>Cellphone</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($members as $member)
+                    <tr>
+                        <td>{{ $member->member }}</td>
+                        <td>{{ $member->birthdate }}</td>
+                        <td>{{ $member->sitio_zone }}</td>
+                        <td>{{ $member->cellphone }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="total-count">
+            <p>Total Members: {{ $members->count() }}</p>
+        </div>
+    </div>
+
+    <!-- Dependents Table -->
+    <div class="table-container">
+        <h3>Dependents</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Dependent Name</th>
+                    <th>Age</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($dependents as $dependent)
+                    <tr>
+                        <td>{{ $dependent->dependents }}</td>
+                        <td>{{ $dependent->dep_age }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="total-count">
+            <p>Total Dependents: {{ $dependents->count() }}</p>
+        </div>
+    </div>
+</div>
+
 <script>
-    document.getElementById('printBtn').addEventListener('click', function() {
-        var printContent = document.querySelector('.flex-container');  // Select the content to print
-        var printWindow = window.open('', '', 'height=800,width=800');  // Open a new print window
-        printWindow.document.write('<html><head><title>Print</title>');  // Start writing the HTML
-        printWindow.document.write('<style>table {width: 100%; border-collapse: collapse;} th, td {padding: 8px; border: 1px solid #ddd;} h3 {text-align: center;}</style>');  // Optional styles for the printed content
-        printWindow.document.write('</head><body>');
-        printWindow.document.write(printContent.innerHTML);  // Copy the content of the flex-container
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();  // Close the document for printing
-        printWindow.print();  // Trigger the print dialog
-    });
+document.getElementById('printBtn').addEventListener('click', function() {
+    var printWindow = window.open('', '', 'height=800,width=1600');  // Open a new print window with increased width
+    var printContent = `
+        <html>
+        <head>
+            <title>Print</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 10px;
+                    padding: 0;
+                    font-size: 10px;
+                }
+
+                .info-container {
+                    margin-bottom: 20px;
+                }
+
+                .flex-container {
+                    display: block;
+                    width: 100%;
+                    margin-top: 20px;
+                }
+
+                .table-container {
+                    display: inline-block;
+                    width: 48%;
+                    box-sizing: border-box;
+                    margin-right: 1%;
+                    padding: 0;
+                    vertical-align: top;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    table-layout: fixed;
+                }
+
+                th, td {
+                    padding: 3px;
+                    text-align: left;
+                    border: 1px solid #ddd;
+                    font-size: 10px;
+                }
+
+                h3 {
+                    text-align: center;
+                    font-size: 12px;
+                }
+
+                .total-count {
+                    text-align: center;
+                    margin-top: 10px;
+                    font-size: 10px;
+                }
+
+                @page {
+                    margin: 0;
+                }
+
+                body {
+                    margin: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="info-container">
+                <p>BARANGAY: <span class="bold-text">${{ $barangay }}</span></p>
+                <p>SLP: <span class="bold-text">${{ $slp }}</span></p>
+            </div>
+            <div class="flex-container">
+                <div class="table-container">
+                    <h3>Members</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Member Name</th>
+                                <th>Birthdate</th>
+                                <th>Zone/Sitio</th>
+                                <th>Cellphone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($members as $member)
+                                <tr>
+                                    <td>{{ $member->member }}</td>
+                                    <td>{{ $member->birthdate }}</td>
+                                    <td>{{ $member->sitio_zone }}</td>
+                                    <td>{{ $member->cellphone }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <div class="total-count">
+                        <p>Total Members: {{ $members->count() }}</p>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <h3>Dependents</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Dependent Name</th>
+                                <th>Age</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($dependents as $dependent)
+                                <tr>
+                                    <td>{{ $dependent->dependents }}</td>
+                                    <td>{{ $dependent->dep_age }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <div class="total-count">
+                        <p>Total Dependents: {{ $dependents->count() }}</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>`;
+    // Write the content to the print window
+    printWindow.document.write(printContent);
+    printWindow.document.close();  // Close the document for printing
+    printWindow.print();  // Trigger the print dialog
+});
 </script>
+
 
 <script>
     document.getElementById('exportBtn').addEventListener('click', function() {
