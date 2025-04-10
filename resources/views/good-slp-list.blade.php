@@ -39,7 +39,7 @@
         font-weight: bold;  /* Make the values bold */
     }
 </style>
-<div class="print-button-container">
+<div class="print-button-container d">
     <button class="btn btn-primary" id="printBtn">Print</button>
     <a href="#" class="btn btn-success" id="exportBtn">Export to Excel</a>
 </div>
@@ -53,22 +53,25 @@
     <!-- Members Table -->
     <div class="table-container">
         <h3>Members</h3>
-        <table class="table table-bordered">
+        <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Member Name</th>
                     <th>Birthdate</th>
                     <th>Precint</th>
-                    <th>Barangay D2</th>
+                    <th>{{ $district == 1 ? 'Barangay D1' : 'Barangay D2' }}</th>
                 </tr>
             </thead>
             <tbody>
+                @php $counter = 1; @endphp
                 @foreach($members as $member)
                     <tr>
+                        <td>{{ $counter++ }}</td>
                         <td>{{ $member->member }}</td>
                         <td>{{ $member->birthdate }}</td>
-                        <td>{{ $member->d2 }}</td>
-                        <td>{{ $member->brgy_d2 }}</td>
+                        <td>{{ $district == 1 ? $member->d1 : $member->d2 }}</td>
+                        <td>{{ $district == 1 ? $member->brgy_d1 : $member->brgy_d2 }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -81,22 +84,25 @@
     <!-- Dependents Table -->
     <div class="table-container">
         <h3>Dependents</h3>
-        <table class="table table-bordered">
+        <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Dependent Name</th>
                     <th>Age</th>
                     <th>Precint</th>
-                    <th>Barangay D2</th>
+                    <th>{{ $district == 1 ? 'Barangay D1' : 'Barangay D2' }}</th>
                 </tr>
             </thead>
             <tbody>
+                @php $counter = 1; @endphp
                 @foreach($dependents as $dependent)
                     <tr>
+                        <td>{{ $counter++ }}</td>
                         <td>{{ $dependent->dependents }}</td>
                         <td>{{ $dependent->dep_age }}</td>
-                        <td>{{ $dependent->dep_d2 }}</td>
-                        <td>{{ $dependent->dep_brgy_d2 }}</td>
+                        <td>{{ $district == 1 ? $dependent->dep_d1 : $dependent->dep_d2 }}</td>
+                        <td>{{ $district == 1 ? $dependent->dep_brgy_d1 : $dependent->dep_brgy_d2 }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -172,55 +178,54 @@ document.getElementById('printBtn').addEventListener('click', function() {
             <div class="flex-container">
                 <div class="table-container">
                     <h3>Members</h3>
-                    <table class="table">
+                    <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Member Name</th>
                                 <th>Birthdate</th>
                                 <th>Precint</th>
-                                <th>Barangay D2</th>
+                                <th>{{ $district == 1 ? 'Barangay D1' : 'Barangay D2' }}</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @php $counter = 1; @endphp
                             @foreach($members as $member)
                                 <tr>
+                                    <td>{{ $counter++ }}</td>
                                     <td>{{ $member->member }}</td>
                                     <td>{{ $member->birthdate }}</td>
-                                    <td>{{ $member->d2 }}</td>
-                                    <td>{{ $member->brgy_d2 }}</td>
+                                    <td>{{ $district == 1 ? $member->d1 : $member->d2 }}</td>
+                                    <td>{{ $district == 1 ? $member->brgy_d1 : $member->brgy_d2 }}</td>
                                 </tr>
                             @endforeach
-                            <tr>
-                                <th colspan="4">Total Members: {{ $members->count() }}</th>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div class="table-container2">
                     <h3>Dependents</h3>
-                    <table class="table">
+                    <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Dependent Name</th>
                                 <th>Age</th>
                                 <th>Precint</th>
-                                <th>Barangay D2</th>
-                              
+                                <th>{{ $district == 1 ? 'Barangay D1' : 'Barangay D2' }}</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @php $counter = 1; @endphp
                             @foreach($dependents as $dependent)
                                 <tr>
+                                    <td>{{ $counter++ }}</td>
                                     <td>{{ $dependent->dependents }}</td>
                                     <td>{{ $dependent->dep_age }}</td>
-                                    <td>{{ $dependent->dep_d2 }}</td>
-                                    <td>{{ $dependent->dep_brgy_d2 }}</td>
+                                    <td>{{ $district == 1 ? $dependent->dep_d1 : $dependent->dep_d2 }}</td>
+                                    <td>{{ $district == 1 ? $dependent->dep_brgy_d1 : $dependent->dep_brgy_d2 }}</td>
                                 </tr>
                             @endforeach
-                            <tr>
-                                <th colspan="4">Total Dependents: {{ $dependents->count() }}</th>
-                            </tr>
                         </tbody>
                     </table>
                 </div>

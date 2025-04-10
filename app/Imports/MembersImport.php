@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 class MembersImport implements ToModel, WithHeadingRow
 {
+    protected $batch;
+
+    public function __construct($batch)
+    {
+        $this->batch = $batch;
+    }
+
     public function model(array $row)
     {
         // Trim spaces from each value to avoid hidden characters
@@ -63,6 +70,7 @@ class MembersImport implements ToModel, WithHeadingRow
                 'brgy_d2' => $row['brgy_d2'] ?? '',
                 'd1' => $row['d1'] ?? '',
                 'brgy_d1' => $row['brgy_d1'] ?? '',
+                'batch' => $this->batch,
             ]);
 
             // Store the member_id of the last saved member

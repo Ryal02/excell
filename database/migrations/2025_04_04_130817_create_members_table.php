@@ -28,6 +28,7 @@ class CreateMembersTable extends Migration
             $table->string('brgy_d2')->nullable();
             $table->string('d1')->nullable();
             $table->string('brgy_d1')->nullable();
+            $table->string('batch')->nullable();
             $table->timestamps();
         });
 
