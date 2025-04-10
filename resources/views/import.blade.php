@@ -532,10 +532,9 @@
 
                 if (selectedSlp) {
                     if (selectedSlp === "All") {
-                        
                         // If "All" is selected, display all data for both tables
                         $.ajax({
-                            url: '/members/slp/all/dependents', // New route for fetching all data
+                            url: '/members/slp/bad/all', // New route for fetching all data
                             type: 'GET',
                             success: function(data) {
                                 $('#dynamicTableContainer').html(data).show();

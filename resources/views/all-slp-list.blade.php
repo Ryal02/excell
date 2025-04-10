@@ -75,6 +75,7 @@
                         <th>Zone/Sitio</th>
                         <th>Cellphone</th>
                         <th>Precint</th>
+                        <th>Barangay D1</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,6 +86,7 @@
                             <td>{{ $member->sitio_zone }}</td>
                             <td>{{ $member->cellphone }}</td>
                             <td>{{ $member->d1 }}</td>
+                            <td>{{ $member->brgy_d1 }}</td>
                         </tr>
                     @endforeach
                 </tbody>

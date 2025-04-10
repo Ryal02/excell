@@ -24,7 +24,7 @@ Route::get('/members/slp/{slp}/dependents', [MemberController::class, 'getDepend
 Route::get('/members/slp/{slp}/dependents-good', [MemberController::class, 'getDependentsBygoodSlp'])->name('members.getDependentsBygoodSlp');
 Route::get('/members/d1', [MemberController::class, 'getD1membersDep'])->name('members.getD1membersDep');
 
-Route::get('/members/slp/all/dependents', [MemberController::class, 'getAllDependents'])->name('members.getAllDependents');
+Route::get('/members/slp/bad/all', [MemberController::class, 'getAllDependents'])->name('members.getAllDependents');
 
 Route::post('import', function(Request $request) {
     $request->validate([

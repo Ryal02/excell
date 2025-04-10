@@ -224,7 +224,6 @@ document.getElementById('printBtn').addEventListener('click', function() {
 });
 </script>
 
-// Excel Export Button Script
 <script>
 document.getElementById('exportBtn').addEventListener('click', function() {
     var membersTable = document.querySelector(".table-container:nth-child(1) table tbody");
