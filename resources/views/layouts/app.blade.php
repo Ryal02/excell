@@ -130,12 +130,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('batches') ? 'active' : '' }}" href="{{ route('batches') }}">
+                    <a class="nav-link {{ request()->is('batches') || request()->is('members/batch/*') ? 'active' : '' }}" href="{{ route('batches') }}">
                         <i class="bi bi-people-fill"></i> Member List
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('slpGood') ? 'active' : '' }}" href="{{ route('slpGood') }}">
+                    <a class="nav-link {{ request()->is('slpGood') || request()->is('slp/good')? 'active' : '' }}" href="{{ route('slpGood') }}">
                         <i class="bi bi-people-fill"></i> SLP List
                     </a>
                 </li>

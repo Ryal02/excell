@@ -185,6 +185,7 @@ class MemberController extends Controller
     {
         // Fetch all distinct barangays
         $barangays = Member::select('brgy_d2')
+            ->where('batch', $request->batch )
             ->whereNotNull('brgy_d2')  // Exclude NULL values
             ->where('brgy_d2', '!=', '')  // Exclude empty strings
             ->distinct()->get();
@@ -195,19 +196,22 @@ class MemberController extends Controller
             $brgyD2 = $barangay->brgy_d2;
             // Get count of total members in the barangay
             $D2GoodMembers = Member::where('brgy_d2', $barangay->brgy_d2)
+                ->where('batch', $request->batch )
                 ->whereNotNull('d2')
                 ->where('d2', '!=', '')  // Also exclude empty strings
                 ->count();
 
             $D2BadMembers = Member::where('barangay', $barangay->brgy_d2)
+                ->where('batch', $request->batch )
                 ->where(function ($query) {
                     $query->whereNull('d2')  // Ensure we're checking for NULL specifically
                         ->orWhere('d2', ''); // Also include empty string if applicable
                 })
                 ->count();
 
-            $D2Gooddependent = Dependent::whereHas('member', function ($query) use ($barangay) {
-                    $query->where('dep_brgy_d2', $barangay->brgy_d2);
+            $D2Gooddependent = Dependent::whereHas('member', function ($query) use ($barangay, $request) {
+                    $query->where('batch', $request->batch )
+                    ->where('dep_brgy_d2', $barangay->brgy_d2);
                 })
                 ->whereNotNull('dep_d2')
                 ->distinct('dependents')
@@ -215,8 +219,9 @@ class MemberController extends Controller
                 ->count();
                 
                 // Counting dependents without dep_d2
-            $D2Baddependent = Dependent::whereHas('member', function ($query) use ($barangay) {
-                    $query->where('brgy_d2', $barangay->brgy_d2);
+            $D2Baddependent = Dependent::whereHas('member', function ($query) use ($barangay, $request) {
+                    $query->where('batch', $request->batch )
+                    ->where('brgy_d2', $barangay->brgy_d2);
                 })
                 ->where(function ($query) {
                     // Check for dep_d2 being either NULL or an empty string
@@ -226,21 +231,25 @@ class MemberController extends Controller
                 ->count();
 
             $memberdistrict1 = Member::where('barangay', $brgyD2)
+                ->where('batch', $request->batch )
                 ->whereNotNull('d1')
                 ->where('d1', '!=', '')
                 ->count();
     
             // Get count of members who have d2
-            $dependentdistrict1 = Dependent::whereHas('member', function ($query) use ($brgyD2) {
-                    $query->where('brgy_d2', $brgyD2);
+            $dependentdistrict1 = Dependent::whereHas('member', function ($query) use ($brgyD2, $request) {
+                    $query->where('batch', $request->batch )
+                    ->where('brgy_d2', $brgyD2);
                 })
                 ->whereNotNull('dep_d1')
                 ->distinct('dependents')
                 ->where('dep_d1', '!=', '') // If you want distinct dependent names
                 ->count();
                 
-            $totalmember = Member::count();
-            $totalDependent = Dependent::count();
+            $totalmember = Member::where('batch', $request->batch )->count();
+            $totalDependent = Dependent::whereHas('member', function($query) use ($request) {
+                $query->where('batch', $request->batch);
+            })->count();
     
             // Store the data for each barangay
             $listingData[] = [

@@ -38,7 +38,7 @@
         @include('dashboard.form')
     </div>
     <div id="tableDisplay" class='table-responsive' style='max-width 100%; overflow-x: auton;'>
-        <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
+        <table class="table table-sm table-bordered table-hover mb-0 w-full small">
             <thead class='table-dark text-nowrap'>
                 <tr>
                     <th>BARANGAY</th>
