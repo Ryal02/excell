@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use App\Models\Dependent;
+use App\Models\Redun_member;
+use App\Models\Redun_dependent;
 use Illuminate\Http\Request;
 
 class MemberController extends Controller
@@ -183,25 +185,36 @@ class MemberController extends Controller
 
     public function viewListing(Request $request)
     {
-        // Fetch all distinct barangays
-        $barangays = Member::select('brgy_d2')
-            ->where('batch', $request->batch )
-            ->whereNotNull('brgy_d2')  // Exclude NULL values
-            ->where('brgy_d2', '!=', '')  // Exclude empty strings
-            ->distinct()->get();
+        $barangays = Member::where('batch', $request->batch)
+            ->whereNotNull('brgy_d2')
+            ->where('brgy_d2', '!=', '')
+            ->distinct()
+            ->pluck('brgy_d2')
+            ->map(fn($b) => trim($b))
+            ->toArray();
+        $dependentBarangays = Dependent::whereNotNull('dep_brgy_d2')
+            ->where('dep_brgy_d2', '!=', '')
+            ->distinct()
+            ->pluck('dep_brgy_d2')
+            ->map(fn($b) => trim($b))
+            ->toArray();
+        $mergedBarangays = collect(array_merge($barangays, $dependentBarangays))
+            ->unique()
+            ->sort()
+            ->values();
         // Initialize an array to store the data
         $listingData = [];
     
-        foreach ($barangays as $barangay) {
-            $brgyD2 = $barangay->brgy_d2;
+        foreach ($mergedBarangays as $barangay) {
+            $brgyD2 = $barangay;
             // Get count of total members in the barangay
-            $D2GoodMembers = Member::where('brgy_d2', $barangay->brgy_d2)
+            $D2GoodMembers = Member::where('brgy_d2', $barangay)
                 ->where('batch', $request->batch )
                 ->whereNotNull('d2')
                 ->where('d2', '!=', '')  // Also exclude empty strings
                 ->count();
 
-            $D2BadMembers = Member::where('barangay', $barangay->brgy_d2)
+            $D2BadMembers = Member::where('barangay', $barangay)
                 ->where('batch', $request->batch )
                 ->where(function ($query) {
                     $query->whereNull('d2')  // Ensure we're checking for NULL specifically
@@ -211,7 +224,7 @@ class MemberController extends Controller
 
             $D2Gooddependent = Dependent::whereHas('member', function ($query) use ($barangay, $request) {
                     $query->where('batch', $request->batch )
-                    ->where('dep_brgy_d2', $barangay->brgy_d2);
+                    ->where('dep_brgy_d2', $barangay);
                 })
                 ->whereNotNull('dep_d2')
                 ->distinct('dependents')
@@ -221,7 +234,7 @@ class MemberController extends Controller
                 // Counting dependents without dep_d2
             $D2Baddependent = Dependent::whereHas('member', function ($query) use ($barangay, $request) {
                     $query->where('batch', $request->batch )
-                    ->where('brgy_d2', $barangay->brgy_d2);
+                    ->where('brgy_d2', $barangay);
                 })
                 ->where(function ($query) {
                     // Check for dep_d2 being either NULL or an empty string
@@ -239,7 +252,7 @@ class MemberController extends Controller
             // Get count of members who have d2
             $dependentdistrict1 = Dependent::whereHas('member', function ($query) use ($brgyD2, $request) {
                     $query->where('batch', $request->batch )
-                    ->where('brgy_d2', $brgyD2);
+                    ->where('barangay', $brgyD2);
                 })
                 ->whereNotNull('dep_d1')
                 ->distinct('dependents')
@@ -253,7 +266,7 @@ class MemberController extends Controller
     
             // Store the data for each barangay
             $listingData[] = [
-                'barangay' => $barangay->brgy_d2,
+                'barangay' => $barangay,
                 'D2_good_member' => $D2GoodMembers,
                 'D2_good_dependent' => $D2Gooddependent,
                 'D2_bad_member' => $D2BadMembers,
@@ -269,6 +282,23 @@ class MemberController extends Controller
         return view('listing', compact('listingData'));
     }
     
+    public function deleteBatch($batch)
+    {
+        try {
+            // Delete all members and dependents for this batch
+            Member::where('batch', $batch)->delete();
+            Redun_member::where('batch', $batch)->delete();
+            Redun_dependent::where('batch_belong', $batch)->delete();
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            // Log the error if something went wrong
+            \Log::error('Error deleting batch: ' . $e->getMessage());
+
+            return response()->json(['success' => false], 500);
+        }
+    }
+
     //SLP
     public function getDependentsBySlp($slp)
     {
@@ -297,35 +327,6 @@ class MemberController extends Controller
         // Return a view to display the dependents
         return view('slp-list', compact('members', 'dependents', 'barangay', 'slp'));
     }
-
-    //GOOOD SLP
-    // public function getDependentsBygoodSlp($slp)
-    // {
-    //     // Fetch members with the given 'slp' and where 'member' column does not contain 'd2'
-    //     $members = Member::where('slp', $slp)
-    //         ->where(function($query) {
-    //             $query->whereNotNull('d2')
-    //                 ->Where('d2', '!=', ''); // Exclude members with NULL or empty string in 'd2' column
-    //         })
-    //         ->get();
-    //     $dependents = Dependent::join('members', 'dependents.member_id', '=', 'members.id')
-    //         ->where(function ($query) {
-    //             $query->whereNotNull('dependents.dep_d2')
-    //                   ->Where('dependents.dep_d2', '!=', ''); // Filter dependents where 'dep_d2' is NULL or empty
-    //         })
-    //         ->where('members.slp', $slp) // Filter by member's slp
-    //         ->get();
-    //     // Assuming 'barangay' is associated with the first member (you might need to adjust if needed)
-    //     if ($members->isEmpty()) {
-    //         $barangay = Member::where('slp', $slp)->value('barangay') ?: null;
-    //     } else {
-    //         // If members are found, get the barangay from the first member or fallback to brgy_d2
-    //         $barangay = $members->first()->barangay ?: $members->first()->brgy_d2;
-    //     }
-        
-    //     // Return a view to display the dependents
-    //     return view('good-slp-list', compact('members', 'dependents', 'barangay', 'slp'));
-    // }
 
     public function getAllDependents()
     {
@@ -416,4 +417,93 @@ class MemberController extends Controller
         return view('all-slp-list', compact('slpData'));
     }
     
+    public function viewAllListing(Request $request)
+    {
+        $barangays = Member::whereNotNull('brgy_d2')
+            ->where('brgy_d2', '!=', '')
+            ->distinct()
+            ->pluck('brgy_d2')
+            ->map(fn($b) => trim($b))
+            ->toArray();
+        $dependentBarangays = Dependent::whereNotNull('dep_brgy_d2')
+            ->where('dep_brgy_d2', '!=', '')
+            ->distinct()
+            ->pluck('dep_brgy_d2')
+            ->map(fn($b) => trim($b))
+            ->toArray();
+        $mergedBarangays = collect(array_merge($barangays, $dependentBarangays))
+            ->unique()
+            ->sort()
+            ->values();
+        // Initialize an array to store the data
+        $listingData = [];
+    
+        foreach ($mergedBarangays as $barangay) {
+            $brgyD2 = $barangay;
+            // Get count of total members in the barangay
+            $D2GoodMembers = Member::where('brgy_d2', $barangay)
+                ->whereNotNull('d2')
+                ->where('d2', '!=', '')  // Also exclude empty strings
+                ->count();
+
+            $D2BadMembers = Member::where('barangay', $barangay)
+                ->where(function ($query) {
+                    $query->whereNull('d2')  // Ensure we're checking for NULL specifically
+                        ->orWhere('d2', ''); // Also include empty string if applicable
+                })
+                ->count();
+
+            $D2Gooddependent = Dependent::whereHas('member', function ($query) use ($barangay) {
+                    $query->where('dep_brgy_d2', $barangay);
+                })
+                ->whereNotNull('dep_d2')
+                ->distinct('dependents')
+                ->where('dep_d2', '!=', '') // If you want distinct dependent names
+                ->count();
+                
+                // Counting dependents without dep_d2
+            $D2Baddependent = Dependent::whereHas('member', function ($query) use ($barangay) {
+                    $query->where('brgy_d2', $barangay);
+                })
+                ->where(function ($query) {
+                    // Check for dep_d2 being either NULL or an empty string
+                    $query->whereNull('dep_d2')
+                          ->orWhere('dep_d2', '');
+                })
+                ->count();
+
+            $memberdistrict1 = Member::where('barangay', $brgyD2)
+                ->whereNotNull('d1')
+                ->where('d1', '!=', '')
+                ->count();
+    
+            // Get count of members who have d2
+            $dependentdistrict1 = Dependent::whereHas('member', function ($query) use ($brgyD2) {
+                    $query->where('barangay', $brgyD2);
+                })
+                ->whereNotNull('dep_d1')
+                ->distinct('dependents')
+                ->where('dep_d1', '!=', '') // If you want distinct dependent names
+                ->count();
+                
+            $totalmember = Member::count();
+            $totalDependent = Dependent::count();
+    
+            // Store the data for each barangay
+            $listingData[] = [
+                'barangay' => $barangay,
+                'D2_good_member' => $D2GoodMembers,
+                'D2_good_dependent' => $D2Gooddependent,
+                'D2_bad_member' => $D2BadMembers,
+                'D2_bad_dependent' => $D2Baddependent,
+                'member_district1' => $memberdistrict1,
+                'dependent_distric1' => $dependentdistrict1,
+                'total_member' => $totalmember,
+                'total_dependent' => $totalDependent,
+            ];
+        }
+    
+        // Return the view with the listing data
+        return view('all-count-listing', compact('listingData'));
+    }
 }

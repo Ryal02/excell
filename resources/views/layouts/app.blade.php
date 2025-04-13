@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Philippines Democratic Country</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -139,23 +140,11 @@
                         <i class="bi bi-people-fill"></i> SLP List
                     </a>
                 </li>
-                 <!-- SLP List Custom Dropdown -->  
-                 <li class="nav-item">
-                    <button class="dropdown-btn" >
-                        <i class="bi bi-list-ul slp-btn"></i>
-                        <span class="slp-text ">SLP List</span>
-                        <i class="fa fa-caret-down"></i>
-                    </button>
-                    <div class="dropdown-container">
-                        <a class="nav-link {{ request()->routeIs('slpGood') ? 'active' : '' }}" href="#">
-                            <i class="bi bi-check-circle"></i> Good data
-                        </a>
-                        <a class="nav-link {{ request()->routeIs('slp.bad') ? 'active' : '' }}" href="#">
-                            <i class="bi bi-x-circle"></i> Bad data
-                        </a>
-                    </div>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('redundant') || request()->is('redundant/batch/*') ? 'active' : '' }}" href="{{ route('redundant.index') }}">
+                        <i class="bi bi-people-fill"></i> Redundant Lists
+                    </a>
                 </li>
-
             </ul>
         </div>
 

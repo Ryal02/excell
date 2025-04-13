@@ -23,7 +23,7 @@
         </a>
         <a href="{{ url('export') }}" class="btn btn-success">Export to Excel</a>
         <a href="#" id="showFormButton" class="btn btn-success">Add Data</a>
-
+        <button class="btn btn-outline-primary" id="toggleView">View Counts</button>
         <!-- Search Form aligned to the end -->
         <form method="GET" action="{{ route('dashboard') }}" class="d-flex gap-2 ms-auto">
             <input type="text" name="search" placeholder="Search..." class="form-control w-auto" value="{{ request()->search }}">
@@ -37,10 +37,12 @@
     <div id="addFormPage" style="display:none;">
         @include('dashboard.form')
     </div>
+    <div id="allcounts" style="display:none;"></div>
     <div id="tableDisplay" class='table-responsive' style='max-width 100%; overflow-x: auton;'>
         <table class="table table-sm table-bordered table-hover mb-0 w-full small">
             <thead class='table-dark text-nowrap'>
                 <tr>
+                    <th>BATCH</th>
                     <th>BARANGAY</th>
                     <th>SLP</th>
                     <th>MEMBER</th>
@@ -65,6 +67,7 @@
             <tbody>
                 @forelse($members as $member)
                     <tr data-member-id="{{ $member->id }}">
+                        <td>{{ $member->batch }}</td>
                         <td>{{ $member->barangay }}</td>
                         <td>{{ $member->slp }}</td>
                         <td>{{ $member->member }}</td>
@@ -160,6 +163,36 @@
             $('#success-alert').fadeOut('slow');
             $('#error-alert').fadeOut('slow');
         }, 2000);
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        let showingCounts = false;
+
+        $('#toggleView').on('click', function () {
+            if (!showingCounts) {
+                // Show listing/counts
+                $.ajax({
+                    url: "{{ route('members.viewAllListing') }}",
+                    type: 'GET',
+                    success: function (response) {
+                        $('#tableDisplay').hide();
+                        $('#allcounts').html(response).fadeIn();
+                        $('#toggleView').text('View Table'); // Change button text
+                        showingCounts = true;
+                    },
+                    error: function () {
+                        alert('Failed to fetch listing data');
+                    }
+                });
+            } else {
+                // Show original table
+                $('#allcounts').fadeOut();
+                $('#tableDisplay').fadeIn();
+                $('#toggleView').text('View Counts'); // Reset button text
+                showingCounts = false;
+            }
+        });
     });
 </script>
 @endsection

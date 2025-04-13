@@ -40,7 +40,7 @@
     }
 </style>
 <div class="print-button-container">
-    <button class="btn btn-primary" id="printBtn">Print</button>
+    <button class="btn btn-primary" id="printBtn">🖨️ Print</button>
     <a href="#" class="btn btn-success" id="exportBtn">Export to Excel</a>
 </div>
 

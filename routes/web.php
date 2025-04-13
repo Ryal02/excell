@@ -6,6 +6,7 @@ use App\Exports\MemberDepExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\FetchMemberDetailsController;
+use App\Http\Controllers\RedundantController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -30,11 +31,19 @@ Route::get('/get-slp-options', [FetchMemberDetailsController::class, 'getSlpOpti
 Route::get('/members/slp/{slp}/dependents-good', [FetchMemberDetailsController::class, 'getDependentsBygoodSlp'])->name('members.getDependentsBygoodSlp');
 Route::get('/members/slp/all', [FetchMemberDetailsController::class, 'getAllDependents'])->name('members.getAllDependents');
 
+Route::delete('/batch/{batch}/delete', [MemberController::class, 'deleteBatch'])->name('batch.delete');
 
+//REDUNDANT
+Route::get('/redundant', [RedundantController::class, 'index'])->name('redundant.index');
+Route::get('/redundant/batch/all', [RedundantController::class, 'showAll'])->name('redundant.all');
+Route::get('/redundant/batch/{batch}', [RedundantController::class, 'showBatch'])->name('redundant.batch');
 
 // Route::get('/members', [MemberController::class, 'index'])->name('members.index');
 Route::post('/members/store', [MemberController::class, 'store'])->name('members.store');
+
 Route::get('/listing', [MemberController::class, 'viewListing'])->name('members.viewListing');
+Route::get('/alllisting', [MemberController::class, 'viewAllListing'])->name('members.viewAllListing');
+
 Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
 Route::put('/members/{id}/update', [MemberController::class, 'update'])->name('members.update');
 // slp bad

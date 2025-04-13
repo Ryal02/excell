@@ -40,7 +40,7 @@
     }
 </style>
 <div class="print-button-container d">
-    <button class="btn btn-primary" id="printBtn">Print</button>
+    <button class="btn btn-primary" id="printBtn">🖨️ Print</button>
     <a href="#" class="btn btn-success" id="exportBtn">Export to Excel</a>
 </div>
 
@@ -56,7 +56,7 @@
         <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>No.</th>
                     <th>Member Name</th>
                     <th>Birthdate</th>
                     <th>Precint</th>
@@ -87,7 +87,7 @@
         <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>No.</th>
                     <th>Dependent Name</th>
                     <th>Age</th>
                     <th>Precint</th>
@@ -181,7 +181,7 @@ document.getElementById('printBtn').addEventListener('click', function() {
                     <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>No.</th>
                                 <th>Member Name</th>
                                 <th>Birthdate</th>
                                 <th>Precint</th>
@@ -208,7 +208,7 @@ document.getElementById('printBtn').addEventListener('click', function() {
                     <table class="table table-sm table-bordered table-striped table-hover mb-0 w-full small">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>No.</th>
                                 <th>Dependent Name</th>
                                 <th>Age</th>
                                 <th>Precint</th>

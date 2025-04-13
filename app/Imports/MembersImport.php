@@ -4,6 +4,8 @@ namespace App\Imports;
 
 use App\Models\Member;
 use App\Models\Dependent;
+use App\Models\Redun_dependent;
+use App\Models\Redun_member;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -54,14 +56,38 @@ class MembersImport implements ToModel, WithHeadingRow
             if (!empty($row['age']) && is_numeric($row['age'])) {
                 $age = (int) $row['age'];
             }
+            $normalizedMemberName = strtolower(trim($row['member']));
+            $existingMember = Member::whereRaw('LOWER(member) = ?', [$normalizedMemberName])
+            ->where('age', $age)
+            ->first();
 
+            if ($existingMember) {
+                // Log to redundant_members if member already exists
+                Redun_member::create([
+                    'member' => $row['member'],
+                    'barangay' => $row['barangay'] ?? '',
+                    'slp' => $row['slp'] ?? '',
+                    'age' => $age,
+                    'gender' => $row['gender'] ?? '',
+                    'birthdate' => $birthdate,
+                    'sitio_zone' => $row['sitio_zone'] ?? '',
+                    'cellphone' => $row['cellphone'] ?? '',
+                    'd2' => $row['d2'] ?? '',
+                    'brgy_d2' => $row['brgy_d2'] ?? '',
+                    'd1' => $row['d1'] ?? '',
+                    'brgy_d1' => $row['brgy_d1'] ?? '',
+                    'batch' => $this->batch,
+                ]);
+                $lastSavedMemberId = $existingMember->id;
+                return null;
+            }
             // Create the member
             $member = Member::firstOrCreate([
                 'member' => $row['member'],
+                'age' => $age,
             ], [
                 'barangay' => $row['barangay'] ?? '',
                 'slp' => $row['slp'] ?? '',
-                'age' => $age,
                 'gender' => $row['gender'] ?? '',
                 'birthdate' => $birthdate,
                 'sitio_zone' => $row['sitio_zone'] ?? '',
@@ -75,6 +101,7 @@ class MembersImport implements ToModel, WithHeadingRow
 
             // Store the member_id of the last saved member
             $lastSavedMemberId = $member->id;
+            $depAge = '';
                     // Check if dependent data is valid (non-empty 'dependents' and valid 'dep_age')
             if (!empty($row['dependents']) && (!empty($row['dep_age']) || !empty($row['dep_d2']) || !empty($row['dep_brgy_d2']) || !empty($row['dep_d1']) || !empty($row['dep_brgy_d1']))) {
                 // Set dep_age to NULL if it's empty
@@ -87,15 +114,36 @@ class MembersImport implements ToModel, WithHeadingRow
                     ->first();
                 if (!$existingDependent) {
                 // Insert the dependent record if data is valid
-                    Dependent::create([
-                        'member_id'    => $lastSavedMemberId,
-                        'dependents'   => $row['dependents'],
-                        'dep_age'      => $depAge, // Set dep_age to NULL if it's empty
-                        'dep_d2'       => $row['dep_d2'] ?? '',
-                        'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
-                        'dep_d1'       => $row['dep_d1'] ?? '',
-                        'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
-                    ]);
+                $dependentName = trim($row['dependents']);
+                $alreadyADependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])->exists();
+                $alreadyAMember = Member::whereRaw('LOWER(member) = ?', [strtolower($dependentName)])->exists();
+                
+                    if (!$existingDependent && !$alreadyAMember && !$alreadyADependent) {
+                        Dependent::create([
+                            'member_id'    => $lastSavedMemberId,
+                            'dependents'   => $dependentName,
+                            'dep_age'      => $row['dep_age'],
+                            'dep_d2'       => $row['dep_d2'] ?? '',
+                            'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                            'dep_d1'       => $row['dep_d1'] ?? '',
+                            'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                            'batch_belong'  => $this->batch,
+                        ]);
+                    } else {
+                        // Save as redundant dependent
+                        Redun_dependent::create([
+                            'member_id'    => $lastSavedMemberId,
+                            'dependents'   => $dependentName,
+                            'dep_age'      => $row['dep_age'],
+                            'dep_d2'       => $row['dep_d2'] ?? '',
+                            'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                            'dep_d1'       => $row['dep_d1'] ?? '',
+                            'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                            'batch_belong'  => $this->batch,
+                        ]);
+                    }
+                
+                
                 }
             }
 
@@ -112,15 +160,34 @@ class MembersImport implements ToModel, WithHeadingRow
             ->first();
             // Save the dependent using the last valid member_id
             if (!$existingDependent) {
-                Dependent::create([
-                    'member_id'    => $lastSavedMemberId,
-                    'dependents'   => $row['dependents'], // Save the dependent's name
-                    'dep_age'      => $row['dep_age'] ?? '',
-                    'dep_d2'       => $row['dep_d2'] ?? '',
-                    'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
-                    'dep_d1'       => $row['dep_d1'] ?? '',
-                    'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
-                ]);
+                $dependentName = trim($row['dependents']);
+                $alreadyADependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])->exists();
+                $alreadyAMember = Member::whereRaw('LOWER(member) = ?', [strtolower($dependentName)])->exists();
+                
+                if (!$existingDependent && !$alreadyAMember && !$alreadyADependent) {
+                    Dependent::create([
+                        'member_id'    => $lastSavedMemberId,
+                        'dependents'   => $dependentName,
+                        'dep_age'      => $row['dep_age'],
+                        'dep_d2'       => $row['dep_d2'] ?? '',
+                        'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                        'dep_d1'       => $row['dep_d1'] ?? '',
+                        'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                        'batch_belong'  => $this->batch,
+                    ]);
+                } else {
+                    // Save as redundant dependent
+                    Redun_dependent::create([
+                        'member_id'    => $lastSavedMemberId,
+                        'dependents'   => $dependentName,
+                        'dep_age'      => $row['dep_age'],
+                        'dep_d2'       => $row['dep_d2'] ?? '',
+                        'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                        'dep_d1'       => $row['dep_d1'] ?? '',
+                        'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                        'batch_belong'  => $this->batch ?? '',
+                    ]);
+                }
             }
         }
 
