@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\FetchMemberDetailsController;
 use App\Http\Controllers\RedundantController;
+use App\Http\Controllers\AllslpController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -46,6 +47,14 @@ Route::get('/alllisting', [MemberController::class, 'viewAllListing'])->name('me
 
 Route::get('/members/{member}/edit', [MemberController::class, 'edit'])->name('members.edit');
 Route::put('/members/{id}/update', [MemberController::class, 'update'])->name('members.update');
+
+
+//get all slp
+// Web route for view
+Route::get('/getslp/all', [AllslpController::class, 'index'])->name('getslp.all');
+Route::get('/getslp/fetch', [AllslpController::class, 'fetchAll'])->name('getslp.fetchAll');
+
+
 // slp bad
 Route::get('/members/slp/{slp}/dependents', [MemberController::class, 'getDependentsBySlp'])->name('members.getDependentsBySlp');
 // slp good

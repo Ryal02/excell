@@ -5,7 +5,7 @@
         <h2>Available Batches</h2>
 
         <!-- Display batches as clickable badges -->
-        <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap gap-4">
             @foreach($batches as $batch)
                 <div class="badge-container" style="position: relative;">
                     <!-- Batch Badge -->
@@ -14,8 +14,8 @@
                     </a>
                     
                     <!-- Delete Button -->
-                    <button class="btn btn-sm btn-danger delete-batch" data-batch="{{ $batch->batch }}" style="position: absolute; top: 0; right: 0; border-radius: 50%; padding: 0 5px; font-size: 16px;">
-                        X
+                    <button class="btn btn-sm btn-danger delete-batch" data-batch="{{ $batch->batch }}" style="position: absolute; top: -10px; right: -10px; border-radius: 50%; padding: 0 5px; font-size: 16px;">
+                       X
                     </button>
                 </div>
             @endforeach

@@ -9,6 +9,9 @@
     <div id="batchSection">
         <h2>Available Batches</h2>
         <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('getslp.all') }}" class="badge p-3 text-white batch-badge">
+                All
+            </a>
             @foreach($batches as $batch)
                 <a href="javascript:void(0);" 
                 class="badge p-3 text-white batch-badge" 
