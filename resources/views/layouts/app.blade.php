@@ -136,7 +136,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->is('slpGood') || request()->is('slp/good')? 'active' : '' }}" href="{{ route('slpGood') }}">
+                    <a class="nav-link {{ request()->is('slpGood') || request()->is('slp/good') || request()->is('getslp/all') ? 'active' : '' }}" href="{{ route('slpGood') }}">
                         <i class="bi bi-people-fill"></i> SLP List
                     </a>
                 </li>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use App\Models\Dependent;
+use Illuminate\Http\Request;
 
 class AllslpController extends Controller
 {
@@ -26,17 +27,15 @@ class AllslpController extends Controller
         foreach ($slpGroups as $slp => $group) {
             $row = ['slp' => $slp];
     
-            // Init barangay counts
+            // Init barangay member and dependent counts
             foreach ($barangays as $barangay) {
-                $memberCount = $group->where('barangay', $barangay)->count();
-                $dependentCount = $group->filter(function ($m) use ($barangay) {
-                    return $m->barangay === $barangay;
-                })->flatMap->dependents->count();
+                $members = $group->where('barangay', $barangay);
+                $dependents = $members->flatMap->dependents;
     
-                $row[$barangay] = $memberCount + $dependentCount;
+                $row["member_$barangay"] = $members->count();
+                $row["dependent_$barangay"] = $dependents->count();
             }
     
-            // Total stats
             $totalMembers = $group->count();
             $totalDependents = $group->flatMap->dependents->count();
     
@@ -48,10 +47,24 @@ class AllslpController extends Controller
         }
     
         return response()->json([
-            'columns' => $barangays,
+            'barangays' => $barangays,
             'data' => $data
         ]);
+    }    
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:members,id',
+            'slp' => 'required|string|max:255',
+        ]);
+
+        $member = Member::find($request->id);
+        $oldSlp = $member->slp;
+
+        // Update all members with that old SLP name
+        Member::where('slp', $oldSlp)->update(['slp' => $request->slp]);
+
+        return redirect()->back()->with('success', 'SLP name updated successfully.');
     }
-    
-    
 }

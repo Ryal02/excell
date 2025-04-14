@@ -67,7 +67,21 @@ class MemberController extends Controller
     public function slpGood()
     {
         $batches = Member::select('batch')->distinct()->get();
-        return view('members.slpdisplay', compact('batches'));
+        $slpList = Member::select('slp')
+        ->distinct()
+        ->get()
+        ->map(function ($item) {
+            $members = Member::where('slp', $item->slp)->get();
+    
+            return [
+                'slp' => $item->slp,
+                'batches' => $members->pluck('batch')->unique()->values(),
+                'barangays' => $members->pluck('barangay')->unique()->values(),
+                'id' => $members->first()?->id, // For edit/delete buttons
+            ];
+        });
+    
+        return view('members.slpdisplay', compact('batches', 'slpList'));
     }
 
     public function showBatchMembers($batch) {

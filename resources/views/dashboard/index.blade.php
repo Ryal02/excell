@@ -23,7 +23,7 @@
         </a>
         <a href="{{ url('export') }}" class="btn btn-success">Export to Excel</a>
         <a href="#" id="showFormButton" class="btn btn-success">Add Data</a>
-        <button class="btn btn-outline-primary" id="toggleView">View Counts</button>
+        <button class="btn btn-info" id="toggleView">View Counts</button>
         <!-- Search Form aligned to the end -->
         <form method="GET" action="{{ route('dashboard') }}" class="d-flex gap-2 ms-auto">
             <input type="text" name="search" placeholder="Search..." class="form-control w-auto" value="{{ request()->search }}">

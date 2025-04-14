@@ -80,9 +80,79 @@
         <p id="summaryList" class="d-flex flex-column mb-3"></p> <!-- Paragraph for inline text -->
         <div id="dynamicTableContainer"></div>
     </div>
+    <table id="slpList" class="mt-3 table table-sm table-bordered table-hover mb-10 w-full small">
+        <thead class='table-dark text-nowrap'>
+            <tr>
+                <th>BATCH</th>
+                <th>BARANGAY</th>
+                <th>SLP</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($slpList as $slpItem)
+                <tr data-member-id="{{ $slpItem['id'] }}">
+                    <td>{{ implode(', ', $slpItem['batches']->toArray()) }}</td>
+                    <td>{{ implode(', ', $slpItem['barangays']->toArray()) }}</td>
+                    <td>{{ $slpItem['slp'] }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-primary btn-sm"
+                                onclick="openEditModal('{{ $slpItem['id'] }}', '{{ $slpItem['slp'] }}')">
+                                Update
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4">No SLP data found.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+</div>
+<!-- Edit SLP Modal -->
+<div class="modal fade" id="editSlpModal" tabindex="-1" role="dialog" aria-labelledby="editSlpModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form id="editSlpForm" method="POST" action="{{ route('slp.update') }}">
+      @csrf
+      @method('PUT')
+      <input type="hidden" name="id" id="slp-id">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editSlpModalLabel">Edit SLP</h5>
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="slp-name">SLP Name</label>
+            <input type="text" class="form-control" id="slp-name" name="slp" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function openEditModal(id, slpName) {
+        document.getElementById('slp-id').value = id;
+        document.getElementById('slp-name').value = slpName;
+        const modal = new bootstrap.Modal(document.getElementById('editSlpModal'));
+        modal.show();
+    }
+</script>
 <script>
     $(document).ready(function () {
         let selectedBatch = null;
@@ -165,6 +235,7 @@
         $('#skipBatch').hide();
         $('#skipDistrict').hide();
         $('#skipGoodBad').hide();
+        $('#slpList').show();
     }
 
     // Show Reset Button
@@ -184,6 +255,7 @@
             $('#batchSection').hide();
             $('#districtSection').show();
             $('#skipDistrict').show();
+            $('#slpList').hide();
             updateSummary();
         });
 
@@ -192,11 +264,13 @@
             $('#districtSection').hide();
             $('#goodBadSection').show();
             $('#skipGoodBad').show();
+            $('#slpList').hide();
             updateSummary();
         });
 
         $('#skipGoodBad').on('click', function () {
             selectedGoodBad = null;
+            $('#slpList').hide();
             $('#goodBadSection').hide();
             $('#slpSection').show();
             updateSummary();
@@ -211,6 +285,7 @@
             $('#batchSection').hide();
             $('#districtSection').show();
             $('#skipDistrict').show();
+            $('#slpList').hide();
 
             showResetButton(); // Show the reset button when a selection is made
 
@@ -226,6 +301,7 @@
             $('#districtSection').hide();
             $('#goodBadSection').show();
             $('#skipGoodBad').show();
+            $('#slpList').hide();
 
             showResetButton(); // Show the reset button when a selection is made
 
@@ -240,6 +316,7 @@
             selectedGoodBad = $(this).data('good-bad');
             $('#goodBadSection').hide();
             $('#slpSection').show();
+            $('#slpList').hide();
 
             showResetButton(); // Show the reset button when a selection is made
 

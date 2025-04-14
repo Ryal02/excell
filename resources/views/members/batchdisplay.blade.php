@@ -14,8 +14,8 @@
                     </a>
                     
                     <!-- Delete Button -->
-                    <button class="btn btn-sm btn-danger delete-batch" data-batch="{{ $batch->batch }}" style="position: absolute; top: -10px; right: -10px; border-radius: 50%; padding: 0 5px; font-size: 16px;">
-                       X
+                    <button class="btn btn-sm btn-danger delete-batch" data-batch="{{ $batch->batch }}" style="position: absolute; top: -8px; right: -8px; border-radius: 50%; padding: 0 5px; font-size: 10px;">
+                       x
                     </button>
                 </div>
             @endforeach
