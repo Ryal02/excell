@@ -89,7 +89,7 @@ class MemberController extends Controller
         $batches = Member::where('batch', $batch)->distinct()->paginate(10);
     
         // Return the view with the members
-        return view('members.batch', compact('batches'));
+        return view('members.batch', compact('batches', 'batch'));
     }
     public function store(Request $request)
     {

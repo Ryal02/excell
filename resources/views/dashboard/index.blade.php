@@ -21,7 +21,7 @@
         <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
             Upload Excel
         </a>
-        <a href="{{ url('export') }}" class="btn btn-success">Export to Excel</a>
+        <a href="{{ url('export') }}" class="btn btn-success"> <i class="fas fa-download me-1"></i>  Export to Excel</a>
         <a href="#" id="showFormButton" class="btn btn-success">Add Data</a>
         <button class="btn btn-info" id="toggleView">View Counts</button>
         <!-- Search Form aligned to the end -->

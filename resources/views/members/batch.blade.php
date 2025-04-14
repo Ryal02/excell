@@ -23,6 +23,9 @@
         </a>
         <!-- Search Form aligned to the end -->
         <button class="btn btn-outline-primary" id="toggleView">View Counts</button>
+        <a href="{{ route('export.batch', ['batch' => $batch]) }}" class="btn btn-success">
+            <i class="fas fa-download me-1"></i> Export Batch {{ $batch }}
+        </a>
         <form method="GET" action="{{ route('dashboard') }}" class="d-flex gap-2 ms-auto">
             <input type="text" name="search" placeholder="Search..." class="form-control w-auto" value="{{ request()->search }}">
             <button type="submit" class="btn btn-primary">Search</button>
@@ -143,6 +146,7 @@
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
     document.getElementById("showFormButton").addEventListener("click", function(event) {
         event.preventDefault();

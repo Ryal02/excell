@@ -57,7 +57,7 @@
 <!-- Print Button and Export to Excel -->
 <div class="print-button-container">
     <button class="btn btn-primary" id="printBtn">🖨️ Print</button>
-    <a href="#" class="btn btn-success" id="exportBtn">Export to Excel</a>
+    <a href="#" class="btn btn-success" id="exportBtn"> <i class="fas fa-download me-1"></i>  Export to Excel</a>
 </div>
 
 <!-- Flex Container for Tables -->

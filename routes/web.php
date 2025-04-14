@@ -2,6 +2,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Imports\MembersImport;
 use App\Exports\MembersExport;
+use App\Exports\MembersBatchExport;
 use App\Exports\MemberDepExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MemberController;
@@ -85,6 +86,11 @@ Route::post('import', function(Request $request) {
 Route::get('export', function () {
     return Excel::download(new MembersExport, 'members.xlsx');
 });
+
+Route::get('export/batch/{batch}', function ($batch) {
+    return Excel::download(new MembersBatchExport($batch), "members_{$batch}.xlsx");
+})->name('export.batch');
+
 Route::post('/export-visible-members', function (Request $request) {
     // Decode the data passed from frontend
     $data = json_decode($request->input('data'), true);
