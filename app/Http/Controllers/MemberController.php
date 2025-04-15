@@ -87,9 +87,18 @@ class MemberController extends Controller
     public function showBatchMembers($batch) {
         // Get members for the specified batch
         $batches = Member::where('batch', $batch)->distinct()->paginate(10);
-    
+        $totalGood = Member::where('batch', $batch)
+            ->where('d2', '!=', '')
+            ->orWhere('d1', '!=', '')
+            ->count();
+        // Count only redundant members for this batch
+        $totalRedundant = Redun_member::where('batch', $batch)
+            ->where('d2', '!=', '')
+            ->orWhere('d1', '!=', '')
+            ->count();
+        $overallTotal = $totalGood + $totalRedundant;
         // Return the view with the members
-        return view('members.batch', compact('batches', 'batch'));
+        return view('members.batch', compact('batches', 'batch', 'totalGood', 'totalRedundant', 'overallTotal'));
     }
     public function store(Request $request)
     {

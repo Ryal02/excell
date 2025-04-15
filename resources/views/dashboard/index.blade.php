@@ -91,9 +91,6 @@
                                 <button type='button' class='btn btn-primary' onclick="showEditForm({{ $member->id }})">
                                     Update
                                 </button>
-                                <button type='button' class='btn btn-danger'>
-                                    Delete
-                                </button>
                             </div>
                         </td>
                     </tr>

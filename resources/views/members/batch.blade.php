@@ -109,6 +109,13 @@
                 <strong>Total Members: </strong>{{ $batches->total() }} <!-- Total count -->
             </div>
         </div>
+        <div class="d-flex justify-content-center">
+            <div class="mt-2 ms-5 d-flex">
+                <div class="me-5"><strong>Total Good Member:</strong> {{ $totalGood }}</div>
+                <div class="me-5"><strong>Total Redundant Member:</strong> {{ $totalRedundant }}</div>
+                <div><strong>OVERALL TOTAL:</strong> {{ $overallTotal }}</div>
+            </div>
+        </div>
     </div>
 
     <!-- Upload Modal -->
