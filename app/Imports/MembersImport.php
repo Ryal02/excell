@@ -62,29 +62,58 @@ class MembersImport implements ToModel, WithHeadingRow
             ->first();
 
             if ($existingMember) {
-                // Log to redundant_members if member already exists
+                // 1. Save to Redun_member table
                 Redun_member::create([
-                    'member' => $row['member'],
-                    'barangay' => $row['barangay'] ?? '',
-                    'slp' => $row['slp'] ?? '',
-                    'age' => $age,
-                    'gender' => $row['gender'] ?? '',
-                    'birthdate' => $birthdate,
-                    'sitio_zone' => $row['sitio_zone'] ?? '',
-                    'cellphone' => $row['cellphone'] ?? '',
-                    'd2' => $row['d2'] ?? '',
-                    'brgy_d2' => $row['brgy_d2'] ?? '',
-                    'd1' => $row['d1'] ?? '',
-                    'brgy_d1' => $row['brgy_d1'] ?? '',
-                    'batch' => $this->batch,
+                    'member'      => $row['member'],
+                    'barangay'    => $row['barangay'] ?? '',
+                    'slp'         => $row['slp'] ?? '',
+                    'age'         => $age ?? 0,
+                    'gender'      => $row['gender'] ?? '',
+                    'birthdate'   => $birthdate,
+                    'sitio_zone'  => $row['sitio_zone'] ?? '',
+                    'cellphone'   => $row['cellphone'] ?? '',
+                    'd2'          => $row['d2'] ?? '',
+                    'brgy_d2'     => $row['brgy_d2'] ?? '',
+                    'd1'          => $row['d1'] ?? '',
+                    'brgy_d1'     => $row['brgy_d1'] ?? '',
+                    'batch'       => $this->batch,
                 ]);
+            
+                // 2. Update only the fields that are null/empty in DB but provided in new data
+                $fieldsToUpdate = [
+                    'barangay'   => $row['barangay'] ?? null,
+                    'slp'        => $row['slp'] ?? null,
+                    'gender'     => $row['gender'] ?? null,
+                    'birthdate'  => $birthdate ?? null,
+                    'sitio_zone' => $row['sitio_zone'] ?? null,
+                    'cellphone'  => $row['cellphone'] ?? null,
+                    'd2'         => $row['d2'] ?? null,
+                    'brgy_d2'    => $row['brgy_d2'] ?? null,
+                    'd1'         => $row['d1'] ?? null,
+                    'brgy_d1'    => $row['brgy_d1'] ?? null,
+                ];
+            
+                $updated = false;
+                foreach ($fieldsToUpdate as $field => $newValue) {
+                    if (!empty($newValue) && empty($existingMember->$field)) {
+                        $existingMember->$field = $newValue;
+                        $updated = true;
+                    }
+                }
+            
+                if ($updated) {
+                    $existingMember->save();
+                    \Log::info("Updated existing member ID {$existingMember->id} with new non-empty fields.");
+                }
+            
                 $lastSavedMemberId = $existingMember->id;
-                return null;
+                return null; // skip saving again as new
             }
+            
             // Create the member
             $member = Member::firstOrCreate([
                 'member' => $row['member'],
-                'age' => $age,
+                'age' => $age ?? 0,
             ], [
                 'barangay' => $row['barangay'] ?? '',
                 'slp' => $row['slp'] ?? '',

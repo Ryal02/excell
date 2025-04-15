@@ -11,6 +11,9 @@
             <a href="{{ route('redundant.batch', $batch) }}" class="badge p-3 text-white batch-badge" data-batch="{{ $batch }}">
                 Batch {{ $batch }}
             </a>
+            <button class="btn btn-sm btn-danger delete-batch" data-batch="{{ $batch }}" style="position: absolute; top: -8px; right: -8px; border-radius: 50%; padding: 0 5px; font-size: 10px;">
+                x
+            </button>
         @endforeach
     </div>
 </div>
