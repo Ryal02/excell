@@ -78,7 +78,7 @@ class FetchMemberDetailsController extends Controller
                     $dependentsQuery->whereNotNull('dependents.dep_d2')->where('dependents.dep_d2', '!=', '');
                 } elseif ($request->has('good_bad') && $request->good_bad == 'Bad') {
                     // Bad means dependents who do not have 'dep_d2'
-                    $dependentsQuery->whereNull('dependents.dep_d2')->orWhere('dependents.dep_d2', '');
+                    $dependentsQuery->whereNull('dependents.dep_d2')->where('dependents.dep_d2', '');
                 }
             } elseif ($request->district == 1) {
                 // District 1 uses `dep_d1` for dependents' good/bad
@@ -182,9 +182,9 @@ class FetchMemberDetailsController extends Controller
         } elseif ($request->has('good_bad') && $request->good_bad == 'Bad') {
             // If 'Bad', check for null or empty values in the district field
             if ($request->district == 2) {
-                $dependentsQuery->whereNull('dependents.dep_d1')->orWhere('dependents.dep_d1', '');
-            } elseif ($request->district == 2) {
                 $dependentsQuery->whereNull('dependents.dep_d2')->orWhere('dependents.dep_d2', '');
+            } elseif ($request->district == 2) {
+                $dependentsQuery->whereNull('dependents.dep_d1')->orWhere('dependents.dep_d1', '');
             }
         }
     
