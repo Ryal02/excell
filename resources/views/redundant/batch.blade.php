@@ -55,6 +55,7 @@
                             <th>Batch</th>
                             <th>Dependent Name</th>
                             <th>Age</th>
+                            <th>precint</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,6 +66,7 @@
                                     <td>{{ $dependent->batch_belong }}</td>
                                     <td>{{ $dependent->dependents }}</td>
                                     <td>{{ $dependent->dep_age ?? 'N/A' }}</td>
+                                    <td>{{ $dependent->dep_d2 ? $dependent->dep_d2 : $dependent->dep_d1  }}</td>
                                 </tr>
                         @endforeach
                     </tbody>
