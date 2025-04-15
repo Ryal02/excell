@@ -107,7 +107,6 @@ class MembersImport implements ToModel, WithHeadingRow
                 }
             
                 $lastSavedMemberId = $existingMember->id;
-                return null; // skip saving again as new
             }
             
             // Create the member
@@ -127,7 +126,6 @@ class MembersImport implements ToModel, WithHeadingRow
                 'brgy_d1' => $row['brgy_d1'] ?? '',
                 'batch' => $this->batch,
             ]);
-
             // Store the member_id of the last saved member
             $lastSavedMemberId = $member->id;
             $depAge = '';
@@ -136,17 +134,15 @@ class MembersImport implements ToModel, WithHeadingRow
                 // Set dep_age to NULL if it's empty
                 $depAge = !empty($row['dep_age']) && is_numeric($row['dep_age']) ? (int)$row['dep_age'] : null;
 
-                // Log the valid dependent data for debugging
-                Log::info('Saving Dependent for Member ID ' . $lastSavedMemberId . ': ' . $row['dependents']);
                 $existingDependent = Dependent::where('member_id', $lastSavedMemberId)
                     ->where('dependents', $row['dependents'])
                     ->first();
-                if (!$existingDependent) {
+                
                 // Insert the dependent record if data is valid
                 $dependentName = trim($row['dependents']);
                 $alreadyADependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])->exists();
                 $alreadyAMember = Member::whereRaw('LOWER(member) = ?', [strtolower($dependentName)])->exists();
-                
+
                     if (!$existingDependent && !$alreadyAMember && !$alreadyADependent) {
                         Dependent::create([
                             'member_id'    => $lastSavedMemberId,
@@ -170,10 +166,33 @@ class MembersImport implements ToModel, WithHeadingRow
                             'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
                             'batch_belong'  => $this->batch,
                         ]);
+
+                        $existingDependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])
+                            ->where('dep_age', $depAge)->first();
+                
+                        $fieldsToUpdate = [
+                            'dep_age'      => $depAge,
+                            'dep_d2'       => $row['dep_d2'] ?? '',
+                            'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                            'dep_d1'       => $row['dep_d1'] ?? '',
+                            'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                        ];
+                    
+                        $updated = false;
+                        foreach ($fieldsToUpdate as $field => $newValue) {
+                            if (!empty($newValue) && empty($existingDependent->$field)) {
+                                $existingDependent->$field = $newValue;
+                                $updated = true;
+                            }
+                        }
+                    
+                        if ($updated) {
+                            $existingDependent->save();
+                            \Log::info("Updated existing dependent ID {$existingDependent->id} with new non-empty fields.");
+                        }
                     }
                 
                 
-                }
             }
 
 
@@ -182,40 +201,60 @@ class MembersImport implements ToModel, WithHeadingRow
 
         // If the row contains only dependents (no valid member data), save as dependent for the last valid member_id
         if (!empty($row['dependents']) && $lastSavedMemberId !== null) {
-            // Log each dependent to verify
-            Log::info('Saving Dependent for Member ID ' . $lastSavedMemberId . ': ' . $row['dependents']);
+          
             $existingDependent = Dependent::where('member_id', $lastSavedMemberId)
             ->where('dependents', $row['dependents'])
             ->first();
             // Save the dependent using the last valid member_id
-            if (!$existingDependent) {
-                $dependentName = trim($row['dependents']);
-                $alreadyADependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])->exists();
-                $alreadyAMember = Member::whereRaw('LOWER(member) = ?', [strtolower($dependentName)])->exists();
-                
-                if (!$existingDependent && !$alreadyAMember && !$alreadyADependent) {
-                    Dependent::create([
-                        'member_id'    => $lastSavedMemberId,
-                        'dependents'   => $dependentName,
-                        'dep_age'      => $row['dep_age'],
-                        'dep_d2'       => $row['dep_d2'] ?? '',
-                        'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
-                        'dep_d1'       => $row['dep_d1'] ?? '',
-                        'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
-                        'batch_belong'  => $this->batch,
-                    ]);
-                } else {
-                    // Save as redundant dependent
-                    Redun_dependent::create([
-                        'member_id'    => $lastSavedMemberId,
-                        'dependents'   => $dependentName,
-                        'dep_age'      => $row['dep_age'],
-                        'dep_d2'       => $row['dep_d2'] ?? '',
-                        'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
-                        'dep_d1'       => $row['dep_d1'] ?? '',
-                        'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
-                        'batch_belong'  => $this->batch ?? '',
-                    ]);
+            $dependentName = trim($row['dependents']);
+            $alreadyADependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])->exists();
+            $alreadyAMember = Member::whereRaw('LOWER(member) = ?', [strtolower($dependentName)])->exists();
+            
+            if (!$existingDependent && !$alreadyAMember && !$alreadyADependent) {
+                Dependent::create([
+                    'member_id'    => $lastSavedMemberId,
+                    'dependents'   => $dependentName,
+                    'dep_age'      => $row['dep_age'],
+                    'dep_d2'       => $row['dep_d2'] ?? '',
+                    'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                    'dep_d1'       => $row['dep_d1'] ?? '',
+                    'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                    'batch_belong'  => $this->batch,
+                ]);
+            } else {
+                // Save as redundant dependent
+                Redun_dependent::create([
+                    'member_id'    => $lastSavedMemberId,
+                    'dependents'   => $dependentName,
+                    'dep_age'      => $row['dep_age'],
+                    'dep_d2'       => $row['dep_d2'] ?? '',
+                    'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                    'dep_d1'       => $row['dep_d1'] ?? '',
+                    'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                    'batch_belong'  => $this->batch ?? '',
+                ]);
+                $existingDependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])
+                    ->where('dep_age', $depAge)->first();
+        
+                $fieldsToUpdate = [
+                    'dep_age'      => $depAge,
+                    'dep_d2'       => $row['dep_d2'] ?? '',
+                    'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                    'dep_d1'       => $row['dep_d1'] ?? '',
+                    'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                ];
+            
+                $updated = false;
+                foreach ($fieldsToUpdate as $field => $newValue) {
+                    if (!empty($newValue) && empty($existingDependent->$field)) {
+                        $existingDependent->$field = $newValue;
+                        $updated = true;
+                    }
+                }
+            
+                if ($updated) {
+                    $existingDependent->save();
+                    \Log::info("Updated existing dependent ID {$existingDependent->id} with new non-empty fields.");
                 }
             }
         }
