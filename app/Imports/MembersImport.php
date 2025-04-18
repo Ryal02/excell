@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Imports;
 
 use App\Models\Member;
@@ -10,16 +9,22 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class MembersImport implements ToModel, WithHeadingRow
+class MembersImport implements ToModel, WithChunkReading, WithHeadingRow
 {
     protected $batch;
 
     public function __construct($batch)
     {
         $this->batch = $batch;
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 0);
     }
-
+    public function chunkSize(): int    
+    {
+        return 10; // Process 10 rows at a time
+    }
     public function model(array $row)
     {
         // Trim spaces from each value to avoid hidden characters
@@ -52,7 +57,7 @@ class MembersImport implements ToModel, WithHeadingRow
             }
 
             // Handle age field
-            $age = null;
+            $age = 0;
             if (!empty($row['age']) && is_numeric($row['age'])) {
                 $age = (int) $row['age'];
             }
@@ -147,7 +152,7 @@ class MembersImport implements ToModel, WithHeadingRow
                         Dependent::create([
                             'member_id'    => $lastSavedMemberId,
                             'dependents'   => $dependentName,
-                            'dep_age'      => $row['dep_age'],
+                            'dep_age'      => $row['dep_age'] ?? 0,
                             'dep_d2'       => $row['dep_d2'] ?? '',
                             'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
                             'dep_d1'       => $row['dep_d1'] ?? '',
@@ -159,7 +164,7 @@ class MembersImport implements ToModel, WithHeadingRow
                         Redun_dependent::create([
                             'member_id'    => $lastSavedMemberId,
                             'dependents'   => $dependentName,
-                            'dep_age'      => $row['dep_age'],
+                            'dep_age'      => $row['dep_age'] ?? 0,
                             'dep_d2'       => $row['dep_d2'] ?? '',
                             'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
                             'dep_d1'       => $row['dep_d1'] ?? '',
@@ -169,26 +174,27 @@ class MembersImport implements ToModel, WithHeadingRow
 
                         $existingDependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])
                             ->where('dep_age', $depAge)->first();
-                
-                        $fieldsToUpdate = [
-                            'dep_age'      => $depAge,
-                            'dep_d2'       => $row['dep_d2'] ?? '',
-                            'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
-                            'dep_d1'       => $row['dep_d1'] ?? '',
-                            'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
-                        ];
-                    
-                        $updated = false;
-                        foreach ($fieldsToUpdate as $field => $newValue) {
-                            if (!empty($newValue) && empty($existingDependent->$field)) {
-                                $existingDependent->$field = $newValue;
-                                $updated = true;
+                        if ($existingDependent) {
+                            $fieldsToUpdate = [
+                                'dep_age'      => $depAge ?? 0,
+                                'dep_d2'       => $row['dep_d2'] ?? '',
+                                'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                                'dep_d1'       => $row['dep_d1'] ?? '',
+                                'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                            ];
+                        
+                            $updated = false;
+                            foreach ($fieldsToUpdate as $field => $newValue) {
+                                if (!empty($newValue) && empty($existingDependent->$field)) {
+                                    $existingDependent->$field = $newValue;
+                                    $updated = true;
+                                }
                             }
-                        }
-                    
-                        if ($updated) {
-                            $existingDependent->save();
-                            \Log::info("Updated existing dependent ID {$existingDependent->id} with new non-empty fields.");
+                        
+                            if ($updated) {
+                                $existingDependent->save();
+                                \Log::info("Updated existing dependent ID {$existingDependent->id} with new non-empty fields.");
+                            }
                         }
                     }
                 
@@ -201,7 +207,7 @@ class MembersImport implements ToModel, WithHeadingRow
 
         // If the row contains only dependents (no valid member data), save as dependent for the last valid member_id
         if (!empty($row['dependents']) && $lastSavedMemberId !== null) {
-          
+            $depAge = !empty($row['dep_age']) && is_numeric($row['dep_age']) ? (int)$row['dep_age'] : 0;
             $existingDependent = Dependent::where('member_id', $lastSavedMemberId)
             ->where('dependents', $row['dependents'])
             ->first();
@@ -214,7 +220,7 @@ class MembersImport implements ToModel, WithHeadingRow
                 Dependent::create([
                     'member_id'    => $lastSavedMemberId,
                     'dependents'   => $dependentName,
-                    'dep_age'      => $row['dep_age'],
+                    'dep_age'      => $row['dep_age'] ?? 0,
                     'dep_d2'       => $row['dep_d2'] ?? '',
                     'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
                     'dep_d1'       => $row['dep_d1'] ?? '',
@@ -226,7 +232,7 @@ class MembersImport implements ToModel, WithHeadingRow
                 Redun_dependent::create([
                     'member_id'    => $lastSavedMemberId,
                     'dependents'   => $dependentName,
-                    'dep_age'      => $row['dep_age'],
+                    'dep_age'      => $row['dep_age'] ?? 0,
                     'dep_d2'       => $row['dep_d2'] ?? '',
                     'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
                     'dep_d1'       => $row['dep_d1'] ?? '',
@@ -234,28 +240,30 @@ class MembersImport implements ToModel, WithHeadingRow
                     'batch_belong'  => $this->batch ?? '',
                 ]);
                 $existingDependent = Dependent::whereRaw('LOWER(dependents) = ?', [strtolower($dependentName)])
-                    ->where('dep_age', $depAge)->first();
-        
-                $fieldsToUpdate = [
-                    'dep_age'      => $depAge,
-                    'dep_d2'       => $row['dep_d2'] ?? '',
-                    'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
-                    'dep_d1'       => $row['dep_d1'] ?? '',
-                    'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
-                ];
-            
-                $updated = false;
-                foreach ($fieldsToUpdate as $field => $newValue) {
-                    if (!empty($newValue) && empty($existingDependent->$field)) {
-                        $existingDependent->$field = $newValue;
-                        $updated = true;
+                ->where('dep_age', $depAge ?? 0)->first();
+                if ($existingDependent) {
+                    $fieldsToUpdate = [
+                        'dep_age'      => $depAge ?? 0,
+                        'dep_d2'       => $row['dep_d2'] ?? '',
+                        'dep_brgy_d2'  => $row['dep_brgy_d2'] ?? '',
+                        'dep_d1'       => $row['dep_d1'] ?? '',
+                        'dep_brgy_d1'  => $row['dep_brgy_d1'] ?? '',
+                    ];
+                
+                    $updated = false;
+                    foreach ($fieldsToUpdate as $field => $newValue) {
+                        if (!empty($newValue) && empty($existingDependent->$field)) {
+                            $existingDependent->$field = $newValue;
+                            $updated = true;
+                        }
                     }
-                }
-            
-                if ($updated) {
-                    $existingDependent->save();
-                    \Log::info("Updated existing dependent ID {$existingDependent->id} with new non-empty fields.");
-                }
+                
+                    if ($updated) {
+                        $existingDependent->save();
+                        \Log::info("Updated existing dependent ID {$existingDependent->id} with new non-empty fields.");
+                    }
+                } 
+                    
             }
         }
 

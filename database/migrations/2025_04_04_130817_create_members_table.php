@@ -19,7 +19,7 @@ class CreateMembersTable extends Migration
             $table->string('barangay')->nullable();
             $table->string('slp')->nullable();
             $table->string('member')->nullable();
-            $table->integer('age')->nullable();
+            $table->string('age')->nullable()->default(0);
             $table->string('gender')->nullable();
             $table->string('birthdate')->nullable();
             $table->string('sitio_zone')->nullable();
@@ -37,7 +37,7 @@ class CreateMembersTable extends Migration
             $table->id();
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade'); // Foreign key to members table
             $table->string('dependents')->nullable();
-            $table->integer('dep_age')->nullable();
+            $table->string('dep_age')->nullable()->default(0);
             $table->string('dep_d2')->nullable();
             $table->string('dep_brgy_d2')->nullable();
             $table->string('dep_d1')->nullable();

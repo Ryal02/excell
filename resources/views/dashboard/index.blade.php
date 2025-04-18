@@ -159,7 +159,7 @@
         setTimeout(function () {
             $('#success-alert').fadeOut('slow');
             $('#error-alert').fadeOut('slow');
-        }, 2000);
+        }, 20000);
     });
 </script>
 <script>
