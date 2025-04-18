@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class FetchMemberDetailsController extends Controller
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 0);
+    }
     public function getSlpOptions(Request $request)
     {
         // Get the selected batch from the request

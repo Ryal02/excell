@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class AllslpController extends Controller
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 0);
+    }
     public function index()
     {
         return view('getslp.all');
@@ -67,4 +72,28 @@ class AllslpController extends Controller
 
         return redirect()->back()->with('success', 'SLP name updated successfully.');
     }
+
+    public function getSlp(Request $request, $slp)
+    {
+        $members = Member::where('slp', $slp)->where('d2', '!=', '')->get();
+        $dependents = Dependent::with('member') // <--- Eager load to avoid N+1
+        ->join('members', 'dependents.member_id', '=', 'members.id')
+        ->where('members.slp', $slp)
+        ->where('dep_d2', '!=', '')
+        ->select('dependents.*') // important to avoid overriding model instance
+        ->get();
+      
+        $barangay = null;
+        if ($members->isNotEmpty()) {
+            // Get the barangay from members if any
+            $barangay = $members->first()->barangay ?: $members->first()->brgy_d2;
+        } elseif ($dependents->isNotEmpty()) {
+            // Fallback if no members are found, get the barangay from dependents
+            $barangay = $dependents->first()->member->barangay ?: $dependents->first()->member->brgy_d2;
+        }
+        $district = $request->district;
+
+        return view('all-list-slpmember', compact('members', 'dependents', 'barangay', 'slp', 'district'));
+    }
+    
 }

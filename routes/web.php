@@ -55,6 +55,8 @@ Route::put('/members/{id}/update', [MemberController::class, 'update'])->name('m
 Route::get('/getslp/all', [AllslpController::class, 'index'])->name('getslp.all');
 Route::get('/getslp/fetch', [AllslpController::class, 'fetchAll'])->name('getslp.fetchAll');
 
+Route::get('/getslp/list/{slp}', [AllslpController::class, 'getSlp'])->name('getslp.list');
+
 //SLP UPDATE
 Route::put('/slp/update', [AllslpController::class, 'update'])->name('slp.update');
 

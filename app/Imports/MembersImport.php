@@ -9,9 +9,9 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+// use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class MembersImport implements ToModel, WithChunkReading, WithHeadingRow
+class MembersImport implements ToModel, WithHeadingRow
 {
     protected $batch;
 
@@ -21,10 +21,10 @@ class MembersImport implements ToModel, WithChunkReading, WithHeadingRow
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', 0);
     }
-    public function chunkSize(): int    
-    {
-        return 10; // Process 10 rows at a time
-    }
+    // public function chunkSize(): int    
+    // {
+    //     return 10; // Process 10 rows at a time
+    // }
     public function model(array $row)
     {
         // Trim spaces from each value to avoid hidden characters
@@ -33,7 +33,17 @@ class MembersImport implements ToModel, WithChunkReading, WithHeadingRow
         static $lastSavedMemberId = null;
 
         // Check if the row contains valid member data (name, age, etc.)
-        if (!empty($row['member'])) {
+        if (!empty($row['member']) && (
+            !empty($row['age']) ||
+            !empty($row['gender']) ||
+            !empty($row['birthdate']) ||
+            !empty($row['sitio_zone']) ||
+            !empty($row['cellphone']) ||
+            !empty($row['d2']) ||
+            !empty($row['brgy_d2']) ||
+            !empty($row['d1']) ||
+            !empty($row['brgy_d1'])
+        )) {
             // Valid member data: save the member
             // Handle birthdate field
             $birthdate = $row['birthdate'] ?? null;

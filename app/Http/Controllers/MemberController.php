@@ -8,9 +8,16 @@ use App\Models\Dependent;
 use App\Models\Redun_member;
 use App\Models\Redun_dependent;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class MemberController extends Controller
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 0);
+    }
     public function index(Request $request)
     {
         // Start a query for members, eager load dependents
@@ -60,41 +67,62 @@ class MemberController extends Controller
     }
     public function batches()
     {
-        $batches = Member::select('batch')->distinct()->get();  // Fetch all the batches
+        $batches = Member::select('batch')->distinct()->orderByRaw('CAST(batch AS UNSIGNED) ASC')->get();  // Fetch all the batches
         return view('members.batchdisplay', compact('batches'));
     }
 
     public function slpGood()
     {
-        $batches = Member::select('batch')->distinct()->get();
-        $slpList = Member::select('slp')
-        ->distinct()
-        ->get()
-        ->map(function ($item) {
-            $members = Member::where('slp', $item->slp)->get();
+        // Get all distinct batches for the dropdown/filter
+        $batches = Member::select('batch')
+            ->whereNotNull('batch')
+            ->distinct()
+            ->orderByRaw('CAST(batch AS UNSIGNED) ASC')
+            ->get();
     
+        // Get all members with non-null SLP in a single query
+        $allMembers = Member::whereNotNull('slp')->get();
+    
+        // Group by SLP
+        $grouped = $allMembers->groupBy('slp');
+    
+        // Transform grouped data
+        $transformed = $grouped->map(function ($group, $slp) {
             return [
-                'slp' => $item->slp,
-                'batches' => $members->pluck('batch')->unique()->values(),
-                'barangays' => $members->pluck('barangay')->unique()->values(),
-                'id' => $members->first()?->id, // For edit/delete buttons
+                'slp' => $slp,
+                'batches' => $group->pluck('batch')->filter()->unique()->values(),
+                'barangays' => $group->pluck('barangay')->filter()->unique()->values(),
+                'id' => $group->first()?->id,
             ];
-        });
+        })->values(); // Reindex
+    
+        // Manual pagination
+        $page = request()->get('page', 1);
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
+        $currentItems = $transformed->slice($offset, $perPage)->values();
+    
+        $slpList = new LengthAwarePaginator(
+            $currentItems,
+            $transformed->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
     
         return view('members.slpdisplay', compact('batches', 'slpList'));
     }
+    
 
     public function showBatchMembers($batch) {
         // Get members for the specified batch
         $batches = Member::where('batch', $batch)->distinct()->paginate(10);
         $totalGood = Member::where('batch', $batch)
             ->where('d2', '!=', '')
-            ->orWhere('d1', '!=', '')
             ->count();
         // Count only redundant members for this batch
         $totalRedundant = Redun_member::where('batch', $batch)
             ->where('d2', '!=', '')
-            ->orWhere('d1', '!=', '')
             ->count();
         $overallTotal = $totalGood + $totalRedundant;
         // Return the view with the members

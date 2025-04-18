@@ -14,6 +14,8 @@
         {{-- Left Table: Members --}}
         <div class="col-md-6 mb-4">
             <h5>Redundant Members</h5>
+            <strong>Total REDUNDANT: </strong>{{ count($members) }}
+            <strong>Total REDUNDANT GOOD MEMBER: </strong>{{ $totalRedundant }}
             <div class="table-responsive">
                 <table class="table table-sm table-bordered align-middle small">
                     <thead class="table-dark">
@@ -47,6 +49,8 @@
         {{-- Right Table: Dependents --}}
         <div class="col-md-6 mb-4">
             <h5>Redundant Dependents</h5>
+            <strong>Total DEPENDENT: </strong>{{ count($dependents) }} <!-- Total count -->
+            <strong>Total REDUNDANT GOOD DEPENDENT: </strong>{{ $totaldependent }} <!-- Total count -->
             <div class="table-responsive">
                 <table class="table table-sm table-bordered align-middle small">
                     <thead class="table-dark">

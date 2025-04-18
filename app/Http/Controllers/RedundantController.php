@@ -27,11 +27,16 @@ class RedundantController extends Controller
     }
     public function showAll()
     {
+
+        $totalRedundant = Redun_member::where('d2', '!=', '')
+            ->count();
+        $totaldependent = Redun_dependent::where('dep_d2', '!=', '')
+            ->count();
         $members = Redun_member::all();
         $dependents = Redun_dependent::all();
         $batch = 'All';
     
-        return view('redundant.batch', compact('members', 'dependents', 'batch'));
+        return view('redundant.batch', compact('members', 'dependents', 'batch', 'totalRedundant', 'totaldependent'));
     }
 }
 

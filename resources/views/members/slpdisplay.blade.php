@@ -97,6 +97,9 @@
                     <td>{{ $slpItem['slp'] }}</td>
                     <td>
                         <div class="d-flex justify-content-center gap-2">
+                            <a href="{{ route('getslp.list', ['slp' => $slpItem['slp']]) }}" class="btn btn-secondary btn-sm">
+                                View
+                            </a>
                             <button type="button" class="btn btn-primary btn-sm"
                                 onclick="openEditModal('{{ $slpItem['id'] }}', '{{ $slpItem['slp'] }}')">
                                 Update
@@ -109,9 +112,17 @@
                     <td colspan="4">No SLP data found.</td>
                 </tr>
             @endforelse
+
+
         </tbody>
     </table>
-
+   
+    <div class="d-flex justify-content-center">
+    {{ $slpList->links('pagination::bootstrap-4') }}
+        <div class='mt-2 ms-5'>
+            <strong>Total SLP: </strong>{{ $slpList->total() }} <!-- Total count -->
+        </div>
+    </div>
 </div>
 <!-- Edit SLP Modal -->
 <div class="modal fade" id="editSlpModal" tabindex="-1" role="dialog" aria-labelledby="editSlpModalLabel" aria-hidden="true">
