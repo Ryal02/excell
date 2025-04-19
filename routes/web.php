@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Imports\MembersImport;
 use App\Exports\MembersExport;
 use App\Exports\MembersBatchExport;
+use App\Exports\MembersBarangayExport;
 use App\Exports\MemberDepExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MemberController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\FetchMemberDetailsController;
 use App\Http\Controllers\RedundantController;
 use App\Http\Controllers\AllslpController;
 use App\Http\Controllers\EditMemberController;
+use App\Http\Controllers\BarangayController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -35,6 +37,10 @@ Route::get('/members/slp/{slp}/dependents-good', [FetchMemberDetailsController::
 Route::get('/members/slp/all', [FetchMemberDetailsController::class, 'getAllDependents'])->name('members.getAllDependents');
 
 Route::delete('/batch/{batch}/delete', [MemberController::class, 'deleteBatch'])->name('batch.delete');
+
+// BARANGAY
+Route::get('/barangay', [BarangayController::class, 'index'])->name('barangay.index');
+Route::get('/barangay/show/{brgy}', [BarangayController::class, 'showBrgy'])->name('barangay.show');
 
 //REDUNDANT
 Route::get('/redundant', [RedundantController::class, 'index'])->name('redundant.index');
@@ -88,6 +94,10 @@ Route::post('import', function(Request $request) {
         return redirect()->back()->with('error', 'An error occurred while importing the file: ' . $e->getMessage());
     }
 });
+
+Route::get('export/barangay/{barangay}', function ($barangay) {
+    return Excel::download(new MembersBarangayExport($barangay), "members_{$barangay}.xlsx");
+})->name('export.barangay');
 
 Route::get('export', function () {
     return Excel::download(new MembersExport, 'members.xlsx');

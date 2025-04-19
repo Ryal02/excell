@@ -146,6 +146,11 @@
                         <i class="bi bi-people-fill"></i> Redundant Lists
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('barangay') ? 'active' : '' }}" href="{{ route('barangay.index') }}">
+                        <i class="bi bi-houses-fill"></i> Barangay Lists
+                    </a>
+                </li>
             </ul>
         </div>
 
