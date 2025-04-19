@@ -55,7 +55,7 @@ class MemberController extends Controller
         }
 
         // Paginate the filtered members (you can adjust the number of items per page as needed)
-        $members = $query->paginate(10);
+        $members = $query->paginate(25);
         foreach ($members as $member) {
             // Remove duplicates by using the unique method on the dependents collection
             $member->dependents = $member->dependents->unique('dependents');

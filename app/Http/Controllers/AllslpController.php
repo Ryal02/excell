@@ -95,5 +95,25 @@ class AllslpController extends Controller
 
         return view('all-list-slpmember', compact('members', 'dependents', 'barangay', 'slp', 'district'));
     }
+
+    public function matching()
+    {
+        // Matching members where member name equals slp, and eager load dependent count
+        $matchingMembers = Member::withCount('dependents')
+            ->whereColumn('member', 'slp')
+            ->get();
+
+        $slpGood = Member::distinct()->pluck('slp');
+
+        return view('slp.matching', compact('matchingMembers', 'slpGood'));
+    }
+    
+    public function remove($id)
+    {
+        $member = Member::findOrFail($id);
+        $member->delete(); // or update, depending on your use case
+
+        return back()->with('success', 'Member removed successfully.');
+    }
     
 }

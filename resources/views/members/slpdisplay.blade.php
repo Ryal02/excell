@@ -8,6 +8,7 @@
     <!-- Batch Section -->
     <div id="batchSection">
         <h2>Available Batches</h2>
+        
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('getslp.all') }}" class="badge p-3 text-white batch-badge">
                 All
@@ -74,7 +75,12 @@
             </select>
         </div>
     </div>
-
+    <a  href="{{ url('export/slp') }}" class="btn btn-success mt-2" id="exportBtn"><i class="fas fa-download me-1"></i>  Export to Excel</a>
+    <form action="{{ route('slp.matching') }}" method="GET" class="d-inline">
+        <button type="submit" class="btn btn-primary mt-2">
+            <i class="fas fa-search me-1"></i> Generate Matching SLP List
+        </button>
+    </form>
     <!-- Summary Section -->
     <div id="summarySection" class="mt-4" style="display: none;">
         <p id="summaryList" class="d-flex flex-column mb-3"></p> <!-- Paragraph for inline text -->

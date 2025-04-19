@@ -5,6 +5,7 @@ use App\Exports\MembersExport;
 use App\Exports\MembersBatchExport;
 use App\Exports\MembersBarangayExport;
 use App\Exports\MemberDepExport;
+use App\Exports\SlpExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\FetchMemberDetailsController;
@@ -79,6 +80,12 @@ Route::get('/members/d1', [MemberController::class, 'getD1membersDep'])->name('m
 
 // Route::get('/members/slp/bad/all', [MemberController::class, 'getAllDependents'])->name('members.getAllDependents');
 
+
+Route::get('/slp/matching', [AllslpController::class, 'matching'])->name('slp.matching');
+Route::delete('/slp/remove/{id}', [AllslpController::class, 'remove'])->name('slp.remove');
+
+
+
 Route::post('import', function(Request $request) {
 
     $request->validate([
@@ -98,6 +105,11 @@ Route::post('import', function(Request $request) {
 Route::get('export/barangay/{barangay}', function ($barangay) {
     return Excel::download(new MembersBarangayExport($barangay), "members_{$barangay}.xlsx");
 })->name('export.barangay');
+
+Route::get('export/slp', function () {
+    return Excel::download(new SlpExport, "slp.xlsx");
+})->name('export.slp');
+
 
 Route::get('export', function () {
     return Excel::download(new MembersExport, 'members.xlsx');
