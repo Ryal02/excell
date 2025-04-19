@@ -9,6 +9,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\FetchMemberDetailsController;
 use App\Http\Controllers\RedundantController;
 use App\Http\Controllers\AllslpController;
+use App\Http\Controllers\EditMemberController;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
@@ -60,6 +61,9 @@ Route::get('/getslp/list/{slp}', [AllslpController::class, 'getSlp'])->name('get
 //SLP UPDATE
 Route::put('/slp/update', [AllslpController::class, 'update'])->name('slp.update');
 
+//EDIT MEMBER
+Route::get('/members/{id}/edit', [EditMemberController::class, 'edit']);
+Route::post('/members/update', [EditMemberController::class, 'update'])->name('members.update');
 
 // slp bad
 Route::get('/members/slp/{slp}/dependents', [MemberController::class, 'getDependentsBySlp'])->name('members.getDependentsBySlp');

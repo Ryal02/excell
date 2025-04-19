@@ -88,9 +88,9 @@
                         <td>{{ $member->dependents->pluck('dep_brgy_d1')->implode(', ') }}</td>
                         <td colspan='2' > 
                             <div class='d-flex justify-content-center gap-2'>
-                                <button type='button' class='btn btn-primary' onclick="showEditForm({{ $member->id }})">
-                                    Update
-                                </button>
+                            <button type="button" class="btn btn-primary edit-button" data-id="{{ $member->id }}" data-bs-toggle="modal" data-bs-target="#editModal">
+                                Update
+                            </button>
                             </div>
                         </td>
                     </tr>
@@ -143,6 +143,30 @@
             </div>
         </div>
     </div>
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="editMemberForm" method="POST" action="{{ route('members.update') }}">
+                    @csrf
+                    <input type="hidden" name="id" id="edit_id">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Member</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body row g-3" id="editModalBody">
+                        <!-- Form will be populated via JS -->
+                        <div class="text-center">
+                            <span class="spinner-border" id="editLoading" style="display:none;"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -188,6 +212,50 @@
                 $('#tableDisplay').fadeIn();
                 $('#toggleView').text('View Counts'); // Reset button text
                 showingCounts = false;
+            }
+        });
+    });
+</script>
+<script>
+    $('.edit-button').on('click', function () {
+        const id = $(this).data('id');
+        $('#edit_id').val(id);
+        $('#editModalBody').html('');
+        $('#editLoading').show();
+
+        $.ajax({
+            url: `/members/${id}/edit`, // Fetch route
+            type: 'GET',
+            success: function (data) {
+
+                $('#editLoading').hide();
+
+                let html = `
+                    <div class="col-md-6"><label>Member</label><input type="text" name="member" class="form-control" value="${data.member.member}"></div>
+                    <div class="col-md-6"><label>Barangay</label><input type="text" name="barangay" class="form-control" value="${data.member.barangay}"></div>
+                    <div class="col-md-6"><label>SLP</label><input type="text" name="slp" class="form-control" value="${data.member.slp}"></div>
+                    <div class="col-md-6"><label>Age</label><input type="number" name="age" class="form-control" value="${data.member.age}"></div>
+                    <div class="col-md-6"><label>Gender</label><input type="text" name="gender" class="form-control" value="${data.member.gender}"></div>
+                    <div class="col-md-6"><label>Birthdate</label><input type="date" name="birthdate" class="form-control" value="${data.member.birthdate}"></div>
+                    <div class="col-md-6"><label>Cellphone</label><input type="text" name="cellphone" class="form-control" value="${data.member.cellphone}"></div>
+                    <hr><h6>Dependents</h6>`;
+
+                if (data.member.dependents && data.member.dependents.length > 0) {
+                    data.member.dependents.forEach((dep, index) => {
+                        html += `
+                            <div class="col-md-6"><label>Dependent ${index + 1}</label><input type="text" name="dependents[${index}][dependents]" class="form-control" value="${dep.dependents}"></div>
+                            <div class="col-md-3"><label>Age</label><input type="number" name="dependents[${index}][dep_age]" class="form-control" value="${dep.dep_age}"></div>
+                            <div class="col-md-3"><label>D2</label><input type="text" name="dependents[${index}][dep_d2]" class="form-control" value="${dep.dep_d2}"></div>
+                        `;
+                    });
+                } else {
+                    html += `<p>No dependents found.</p>`;
+                }
+
+                $('#editModalBody').html(html);
+            },
+            error: function () {
+                $('#editModalBody').html('<div class="alert alert-danger">Failed to load member.</div>');
             }
         });
     });
