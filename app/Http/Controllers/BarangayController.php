@@ -8,6 +8,12 @@ use App\Models\Dependent;
 
 class BarangayController extends Controller
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 0);
+    }
+    
     public function index() {
 
         $barangays = Member::select('barangay')->distinct()->get();
